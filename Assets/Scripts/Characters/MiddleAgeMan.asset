@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f385b289e3ea8f47b2da39a026bc134, type: 3}
+  m_Name: MiddleAgeMan
+  m_EditorClassIdentifier: 
+  characterName: MiddleAgeMan
+  type: 0
+  backgroundImage: {fileID: 21300000, guid: 6bc74f7665e4e1443944f82964611547, type: 3}
+  dialogueText: "Make it quickI have responsibilities and no time for distractions.
+    \nCheck my memories."
+  characterSprite: {fileID: 6231675869601175388, guid: 84f7bce62952c254ebe37f516b3e75be, type: 3}
+  spawnPosition: {x: 0, y: 60}
+  characterScale: 0.35
+  stage2Background: {fileID: -7796259796859236292, guid: 89df7fa5c8eea914f97801906eef45f1, type: 3}
+  stage2Position: {x: -570, y: 60}
+  stage2Scale: 0.35
+  storyImages:
+  - {fileID: 5779036021264795948, guid: eb86f2a4835debc4eb7c4d78dcd742df, type: 3}
+  - {fileID: -4126882495801548486, guid: c8ee61f565137cf45abf7b94a8c9ff45, type: 3}
+  framePosition: {x: 308, y: 130}
+  frameScale: 1
+  stage3Background: {fileID: -5674142705049848616, guid: 41196280cc105034a99fa1af3f5eee5c, type: 3}
+  stage3Position: {x: 0, y: -108}
+  stage3Scale: 0.45
+  stage2DialogueText: 'I delay silence with excuses about family
+
+    but the life
+    I wanted never existed
+
+    only a frame holding a cat.'
