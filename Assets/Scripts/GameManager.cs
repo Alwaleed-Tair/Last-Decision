@@ -119,6 +119,9 @@ public class GameManager : MonoBehaviour
         isTyping = false;
         skipRequested = false;
 
+        // Hide skip button immediately until typewriter is ready
+        if (skipButton != null) skipButton.gameObject.SetActive(false);
+
         switch (currentState)
         {
             case GameState.Dialogue:
@@ -285,39 +288,17 @@ public class GameManager : MonoBehaviour
     //                                INPUT HANDLING
     // ========================================================================
     #region Input Handling
-    private void OnSkipClicked()
-    {
-        PlayButtonClickSound();
-
-        // 1. Check if we are currently typing.
-        if (isTyping)
-        {
-            // NEW: Only allow skipping if at least one character has been typed
-            // This prevents skipping the whole block if the user double-clicks the transition button
-            if (dialogueText.text.Length > 0)
-            {
-                skipRequested = true;
-            }
-        }
-        // 2. If NOT typing and text is finished, move to next phase.
-        else
-        {
-            AdvanceGameState();
-        }
-    }
-
     IEnumerator TypewriterEffect(string text)
     {
         if (string.IsNullOrEmpty(text)) yield break;
 
-        // Reset state
         isTyping = true;
         skipRequested = false;
         dialogueText.text = "";
 
-        // OPTIONAL: Add a tiny delay (0.1s) here if you want to be 100% sure 
-        // a click from a previous screen doesn't carry over.
-        // yield return new WaitForSeconds(0.1f);
+        // Ensure the button is hidden or non-interactable until typing starts
+        if (skipButton != null && currentState != GameState.Decision)
+            skipButton.gameObject.SetActive(true);
 
         foreach (char c in text)
         {
@@ -327,26 +308,37 @@ public class GameManager : MonoBehaviour
                 break;
             }
 
-            if (c == '\n')
-            {
-                // Note: Clearing text on newline might make old text disappear. 
-                // Usually, you'd want: dialogueText.text += c;
-                dialogueText.text = "";
-            }
+            if (c == '\n') dialogueText.text = "";
             else
             {
                 dialogueText.text += c;
                 PlayTypewriterSound();
             }
-
             yield return new WaitForSeconds(typewriterSpeed);
         }
 
-        // Wait for a tiny bit so a "finish typing" click doesn't 
-        // immediately trigger "AdvanceGameState" in the same frame
         isTyping = false;
-        yield return new WaitForSeconds(0.2f);
+        // Wait a short duration so the "finish typing" click 
+        yield return new WaitForSeconds(0.3f);
         skipRequested = false;
+    }
+
+    // 3. Updated OnSkipClicked with a text length check
+    private void OnSkipClicked()
+    {
+        // Don't do anything if the text hasn't even started (length 0)
+        if (dialogueText.text.Length == 0) return;
+
+        PlayButtonClickSound();
+
+        if (isTyping)
+        {
+            skipRequested = true;
+        }
+        else
+        {
+            AdvanceGameState();
+        }
     }
 
     private void AdvanceGameState()
