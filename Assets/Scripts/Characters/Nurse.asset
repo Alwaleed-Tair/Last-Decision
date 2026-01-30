@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Nurse
   type: 1
-  backgroundImage: {fileID: 21300000, guid: 6bc74f7665e4e1443944f82964611547, type: 3}
+  backgroundImage: {fileID: 5251809639266272723, guid: 4e9cac05a9791144abdb79fb21654873, type: 3}
   dialogueText: "I don\u2019t have time for doubt\nthis work is my calling\nand lives
     depend on it."
   characterSprite: {fileID: -3872865832385393104, guid: 504c67065d875dd40a41af8bc1270ef8, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
-  stage2Background: {fileID: -7796259796859236292, guid: 89df7fa5c8eea914f97801906eef45f1, type: 3}
+  stage2Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage2Position: {x: -570, y: 60}
   stage2Scale: 0.35
   storyImages:
@@ -28,7 +28,7 @@ MonoBehaviour:
   - {fileID: -648428607928682046, guid: e477a4736ba9533429c706144923543e, type: 3}
   framePosition: {x: 308, y: 130}
   frameScale: 1
-  stage3Background: {fileID: -5674142705049848616, guid: 41196280cc105034a99fa1af3f5eee5c, type: 3}
+  stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -180}
   stage3Scale: 0.45
   stage2DialogueText: "Trapped in endless white halls\nI fix what\u2019s broken while
