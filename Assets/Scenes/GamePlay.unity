@@ -186,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   fadeImage: {fileID: 2110382433}
-  fadeSpeed: 0.35
+  fadeSpeed: 1
   imageFrame: {fileID: 1648422390}
   photoDisplay: {fileID: 912179901}
   dialogueText: {fileID: 1334157762}
@@ -204,9 +204,9 @@ MonoBehaviour:
   buttonClickSoundSource: {fileID: 2024507240}
   suddenSoundSource: {fileID: 1502964872}
   masterVolume: 1
-  musicVolume: 0.7
-  sfxVolume: 0.4
-  typewriterVolume: 0.02
+  musicVolume: 0.9
+  sfxVolume: 0.6
+  typewriterVolume: 0.6
   nextSceneName: Victory
   allCharacters:
   - {fileID: 11400000, guid: 88ea3c02b872cad46a52761bd1c71776, type: 2}
@@ -288,7 +288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.11835292, g: 0.09913132, b: 0.83396226, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1809,11 +1809,11 @@ RectTransform:
   - {fileID: 204031124}
   - {fileID: 597678494}
   - {fileID: 1854786524}
-  - {fileID: 2110382431}
   - {fileID: 749422317}
   - {fileID: 678429554}
   - {fileID: 2024507239}
   - {fileID: 1502964871}
+  - {fileID: 2110382431}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
