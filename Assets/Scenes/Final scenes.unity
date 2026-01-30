@@ -471,7 +471,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 0}
   fadeImage: {fileID: 797434110}
-  fadeDuration: 1.5
+  fadeDuration: 0.2
   autoFadeOnStart: 1
   fadeType: 1
   backgroundMusicSource: {fileID: 1238307583}

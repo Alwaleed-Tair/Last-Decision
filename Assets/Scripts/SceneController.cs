@@ -8,6 +8,9 @@ public class SceneController : MonoBehaviour
     [Header("Blink Transition Settings")]
     public Image blinkImage; // صورة سوداء للغمضة
     public float blinkSpeed = 0.5f; // سرعة الغمضة
+    
+    [Header("Button Sound Settings")]
+    public AudioSource buttonAudioSource; // مصدر الصوت (اسحب الأوبجكت هنا)
 
     private void Start()
     {
@@ -18,33 +21,47 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    // دالة لتشغيل صوت الزر
+    private void PlayButtonSound()
+    {
+        if (buttonAudioSource != null)
+        {
+            buttonAudioSource.Play();
+        }
+    }
+
     // للانتقال لأي مشهد مع تأثير الغمضة
     public void LoadScene(string sceneName)
     {
+        PlayButtonSound();
         StartCoroutine(BlinkAndLoadScene(sceneName));
     }
 
     // للانتقال لأي مشهد باستخدام الرقم
     public void LoadSceneByIndex(int sceneIndex)
     {
+        PlayButtonSound();
         StartCoroutine(BlinkAndLoadSceneByIndex(sceneIndex));
     }
 
     // للرجوع للقائمة الرئيسية
     public void LoadMainMenu()
     {
+        PlayButtonSound();
         StartCoroutine(BlinkAndLoadScene("MainMenu"));
     }
 
     // لإعادة المشهد الحالي
     public void RestartScene()
     {
+        PlayButtonSound();
         StartCoroutine(BlinkAndLoadSceneByIndex(SceneManager.GetActiveScene().buildIndex));
     }
 
     // للخروج من اللعبة
     public void QuitGame()
     {
+        PlayButtonSound();
         Application.Quit();
         Debug.Log("Game Quit!");
     }
@@ -53,6 +70,7 @@ public class SceneController : MonoBehaviour
     // للغمضة مع تنفيذ كود (بدون الانتقال لمشهد)
     public void BlinkWithCallback(System.Action onBlinkComplete)
     {
+        PlayButtonSound();
         StartCoroutine(BlinkCoroutine(onBlinkComplete));
     }
 
@@ -80,6 +98,7 @@ public class SceneController : MonoBehaviour
     // نسخة مبسطة للغمضة بدون callback
     public void JustBlink()
     {
+        PlayButtonSound();
         StartCoroutine(JustBlinkCoroutine());
     }
 
@@ -130,7 +149,6 @@ public class SceneController : MonoBehaviour
         
         float elapsedTime = 0f;
         Color color = blinkImage.color;
-
         while (elapsedTime < blinkSpeed)
         {
             elapsedTime += Time.deltaTime;
@@ -138,7 +156,6 @@ public class SceneController : MonoBehaviour
             blinkImage.color = color;
             yield return null;
         }
-
         color.a = 1f;
         blinkImage.color = color;
     }
@@ -150,7 +167,6 @@ public class SceneController : MonoBehaviour
         Color color = blinkImage.color;
         color.a = 1f;
         blinkImage.color = color;
-
         yield return new WaitForSeconds(0.1f); // انتظار صغير
 
         while (elapsedTime < blinkSpeed)
@@ -160,7 +176,6 @@ public class SceneController : MonoBehaviour
             blinkImage.color = color;
             yield return null;
         }
-
         color.a = 0f;
         blinkImage.color = color;
         
