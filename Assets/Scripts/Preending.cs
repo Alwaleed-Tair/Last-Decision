@@ -99,21 +99,22 @@ public class Preending : MonoBehaviour
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
 
-        // 2. Non-Human Signals (Pause, then Instant Reveal)
+        // 2. Non-Human Signals (Pause, then Instant Red Reveal)
         yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
 
-        // The "Dramatic Pause"
+        // The Dramatic Pause
         yield return new WaitForSeconds(1.5f);
 
-        // Append the number immediately without counting
-        mainStoryText.text += aiSpared.ToString();
-        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount; // Ensure it's visible
+        // Append the number wrapped in a red color tag
+        mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
 
-        if (signalCountSound != null) signalCountSound.Play(); // Single play for impact
+        // Update character count so the tags don't count as visible letters
+        mainStoryText.ForceMeshUpdate();
+        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount;
+
+        if (signalCountSound != null) signalCountSound.Play();
 
         yield return new WaitForSeconds(1.5f);
-        yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
-        yield return new WaitForSeconds(1f);
 
         // ... rest of the code (PHASE 2, etc)
 
