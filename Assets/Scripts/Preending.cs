@@ -93,15 +93,29 @@ public class Preending : MonoBehaviour
         // --- PHASE 1: INTRO ---
         mainStoryText.text = "";
         yield return StartCoroutine(PlayTextSequence(introText, mainStoryText, true, false));
+
+        // 1. Human Signals (Counts up)
         yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
+
+        // 2. Non-Human Signals (Pause, then Instant Reveal)
         yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
+
+        // The "Dramatic Pause"
         yield return new WaitForSeconds(1.5f);
-        yield return StartCoroutine(CountUpEffect(aiSpared, mainStoryText));
-        yield return new WaitForSeconds(1f);
+
+        // Append the number immediately without counting
+        mainStoryText.text += aiSpared.ToString();
+        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount; // Ensure it's visible
+
+        if (signalCountSound != null) signalCountSound.Play(); // Single play for impact
+
+        yield return new WaitForSeconds(1.5f);
         yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
         yield return new WaitForSeconds(1f);
+
+        // ... rest of the code (PHASE 2, etc)
 
         // --- PHASE 2: DEV TALKING ---
         string endingID = DetermineEndingID();
