@@ -193,6 +193,7 @@ MonoBehaviour:
   backgroundDisplay: {fileID: 375390598}
   characterDisplay: {fileID: 1798310169}
   nextButton: {fileID: 1845227956}
+<<<<<<< Updated upstream
   prevButton: {fileID: 2078427757}
   decisionPanel: {fileID: 797784759}
   spareButton: {fileID: 1231128581}
@@ -215,6 +216,25 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1d3c9728e80d2184dbb49efe11d2fa6f, type: 2}
   - {fileID: 11400000, guid: 3da68cc8031757d4a87b1535edfeb017, type: 2}
   - {fileID: 11400000, guid: 6c735136c611d0441bd673736dbb1301, type: 2}
+=======
+  prevButton: {fileID: 0}
+  skipButton: {fileID: 0}
+  decisionPanel: {fileID: 0}
+  spareButton: {fileID: 0}
+  killButton: {fileID: 0}
+  counterText: {fileID: 0}
+  typewriterSpeed: 0.12
+  backgroundMusicSource: {fileID: 0}
+  typewriterSoundSource: {fileID: 0}
+  buttonClickSoundSource: {fileID: 0}
+  suddenSoundSource: {fileID: 0}
+  masterVolume: 1
+  musicVolume: 0.7
+  sfxVolume: 0.8
+  typewriterVolume: 1
+  nextSceneName: EndScene
+  allCharacters: []
+>>>>>>> Stashed changes
 --- !u!4 &330755483
 Transform:
   m_ObjectHideFlags: 0
@@ -1814,6 +1834,11 @@ RectTransform:
   - {fileID: 678429554}
   - {fileID: 2024507239}
   - {fileID: 1502964871}
+<<<<<<< Updated upstream
+=======
+  - {fileID: 2110382431}
+  - {fileID: 831363211}
+>>>>>>> Stashed changes
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2377,7 +2402,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2045929822}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8300000, guid: d01d6939ebe64694b88e25e34d2e70b5, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 'run '
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2078427753
 GameObject:
   m_ObjectHideFlags: 0
