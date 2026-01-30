@@ -275,7 +275,6 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(FadeEffect(0f));
     }
 
-   
     IEnumerator FadeAndChangeCharacter()
     {
         yield return StartCoroutine(FadeEffect(1f));
@@ -292,6 +291,7 @@ public class GameManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(text)) yield break;
 
+        // Reset state
         isTyping = true;
         skipRequested = false;
         dialogueText.text = "";
@@ -308,22 +308,25 @@ public class GameManager : MonoBehaviour
                 break;
             }
 
-            if (c == '\n') dialogueText.text = "";
+            if (c == '\n')
+            {
+                dialogueText.text = "";
+            }
             else
             {
                 dialogueText.text += c;
                 PlayTypewriterSound();
             }
+
             yield return new WaitForSeconds(typewriterSpeed);
         }
 
         isTyping = false;
-        // Wait a short duration so the "finish typing" click 
+        // Wait a short duration so the "finish typing" click doesn't immediately advance
         yield return new WaitForSeconds(0.3f);
         skipRequested = false;
     }
 
-    // 3. Updated OnSkipClicked with a text length check
     private void OnSkipClicked()
     {
         // Don't do anything if the text hasn't even started (length 0)
@@ -425,7 +428,7 @@ public class GameManager : MonoBehaviour
         if (nextButton != null) nextButton.gameObject.SetActive(active);
         if (prevButton != null) prevButton.gameObject.SetActive(active);
 
-        // ⭐ Hide skipButton if we are in Decision state, regardless of 'active' param
+        // Hide skipButton if we are in Decision state, regardless of 'active' param
         if (skipButton != null)
         {
             if (currentState == GameState.Decision)

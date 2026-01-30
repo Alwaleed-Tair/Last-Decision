@@ -303,7 +303,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: b5cc62f36af511042bd5bda900b0eb60, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.6
+  m_Volume: 0.7
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -883,7 +883,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: f06563a1f3dd7d647877b33b113838b9, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.7
+  m_Volume: 0.9
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -1075,7 +1075,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blinkImage: {fileID: 1905681162}
-  blinkSpeed: 0.5
+  blinkSpeed: 0.2
+  buttonAudioSource: {fileID: 462626816}
 --- !u!114 &1971515951
 MonoBehaviour:
   m_ObjectHideFlags: 0

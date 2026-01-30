@@ -11,18 +11,18 @@ public class Preending : MonoBehaviour
     public TextMeshProUGUI imageOverlayText; // White Text (DEV)
 
     [Header("--- IMAGES ---")]
-    public GameObject devImage;          // Standard Dev Image
-    public GameObject zeroTeamImage;     // Background for Ending E Dev Talk
-    public GameObject finalScreenImage; // SHARED Final Screen for ALL endings
+    public GameObject devImage;
+    public GameObject zeroTeamImage;
+    public GameObject finalScreenImage;
     public GameObject restartButton;
 
-    // --- INTERNAL COUNTERS (Hidden from Inspector) ---
+    // --- INTERNAL COUNTERS ---
     private int humansSpared = 0;
     private int aiSpared = 0;
 
     [Header("--- SETTINGS ---")]
     public string mainMenuSceneName = "MainMenu";
-    public string postEndingSceneName = "Credits"; // ⭐ New Scene to load after text finishes
+    public string postEndingSceneName = "Credits";
 
     [Header("--- TYPING SETTINGS ---")]
     public float defaultTypingSpeed = 0.03f;
@@ -36,6 +36,7 @@ public class Preending : MonoBehaviour
     [Header("--- AUDIO ---")]
     public AudioSource typeSoundAudio;
     public AudioSource signalCountSound;
+    public AudioSource horrorSignalSound; // ⭐ New: Horror sound for AI reveal
 
     // ================= MESSAGES =================
 
@@ -64,7 +65,9 @@ public class Preending : MonoBehaviour
     {
         LoadGameData();
 
+        // Standardize volumes to match the typing sound
         if (typeSoundAudio != null) typeSoundAudio.volume = 0.03f;
+        if (signalCountSound != null) signalCountSound.volume = 0.03f;
 
         if (devImage != null) devImage.SetActive(false);
         if (zeroTeamImage != null) zeroTeamImage.SetActive(false);
@@ -93,21 +96,49 @@ public class Preending : MonoBehaviour
         // --- PHASE 1: INTRO ---
         mainStoryText.text = "";
         yield return StartCoroutine(PlayTextSequence(introText, mainStoryText, true, false));
+
+        // 1. Human Signals (Traditional Count Up)
         yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
+
+        // 2. Non-Human Signals (Pause then Instant Deep Red Reveal)
         yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
+
         yield return new WaitForSeconds(1.5f);
-        yield return StartCoroutine(CountUpEffect(aiSpared, mainStoryText));
-        yield return new WaitForSeconds(1f);
+
+        mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
+        mainStoryText.ForceMeshUpdate();
+        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount;
+
+        if (aiSpared >= 1)
+        {
+            if (horrorSignalSound != null)
+            {
+                horrorSignalSound.volume = 0.03f; // Set a base volume
+                horrorSignalSound.Play();
+            }
+        }
+        else
+        {
+            if (signalCountSound != null) signalCountSound.Play();
+        }
+
+        // --- WAIT while the horror sound plays ---
+        yield return new WaitForSeconds(2f);
+
+        // ⭐ FADE OUT THE HORROR SOUND before moving on
+        if (horrorSignalSound != null && horrorSignalSound.isPlaying)
+        {
+            yield return StartCoroutine(FadeOutAudio(horrorSignalSound, 0.5f));
+        }
+
         yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.5f);
 
         // --- PHASE 2: DEV TALKING ---
         string endingID = DetermineEndingID();
-
-        GameObject activeImage = devImage;
-        if (endingID == "E") activeImage = zeroTeamImage;
+        GameObject activeImage = (endingID == "E") ? zeroTeamImage : devImage;
 
         mainStoryText.text = "";
 
@@ -128,21 +159,17 @@ public class Preending : MonoBehaviour
 
             yield return StartCoroutine(PlayTextSequence(textToShow, imageOverlayText, true, true));
             yield return new WaitForSeconds(3f);
-
             activeImage.SetActive(false);
             imageOverlayText.text = "";
         }
 
-        // --- PHASE 3: SYSTEM CONCLUSION (ONLY A, B, C) ---
+        // --- PHASE 3: SYSTEM CONCLUSION ---
         if (endingID == "A" || endingID == "B" || endingID == "C")
         {
             string systemTextToShow = "";
-            switch (endingID)
-            {
-                case "A": systemTextToShow = endingA_SystemText; break;
-                case "B": systemTextToShow = endingB_SystemText; break;
-                case "C": systemTextToShow = endingC_SystemText; break;
-            }
+            if (endingID == "A") systemTextToShow = endingA_SystemText;
+            else if (endingID == "B") systemTextToShow = endingB_SystemText;
+            else if (endingID == "C") systemTextToShow = endingC_SystemText;
 
             if (systemTextToShow != "")
             {
@@ -153,11 +180,9 @@ public class Preending : MonoBehaviour
         }
         else
         {
-            // For Ending D and E, wait briefly after dev talk before transition
             yield return new WaitForSeconds(2f);
         }
 
-        // ⭐ Final Transition
         SceneManager.LoadScene(postEndingSceneName);
     }
 
@@ -178,11 +203,7 @@ public class Preending : MonoBehaviour
 
         foreach (string line in lines)
         {
-            if (line.Trim() == "[pause]")
-            {
-                yield return new WaitForSeconds(1.0f);
-                continue;
-            }
+            if (line.Trim() == "[pause]") { yield return new WaitForSeconds(1.0f); continue; }
 
             if (useFixedSpeed && append && linesOnCurrentPage >= maxLinesPerPage)
             {
@@ -199,6 +220,7 @@ public class Preending : MonoBehaviour
 
     private IEnumerator TypeLine(string line, TextMeshProUGUI targetTextObj, bool append, bool useFixedSpeed)
     {
+        // Regex adjusted to allow <color> tags but remove custom <slow> tags
         string cleanLine = Regex.Replace(line, @"<slow>|</slow>|\[pause\]", "");
         int startIndex = 0;
 
@@ -218,21 +240,17 @@ public class Preending : MonoBehaviour
         targetTextObj.maxVisibleCharacters = startIndex;
         int totalCharacters = targetTextObj.textInfo.characterCount;
         int counter = startIndex;
-        float currentSpeed = defaultTypingSpeed;
-        if (useFixedSpeed) currentSpeed = devTypingSpeed;
+        float currentSpeed = useFixedSpeed ? devTypingSpeed : defaultTypingSpeed;
 
         while (counter <= totalCharacters)
         {
             if (!useFixedSpeed)
             {
                 int localIndex = counter - startIndex;
-                if (localIndex >= 0 && localIndex < line.Length)
-                {
-                    if (line.Contains("<slow>") && localIndex > line.IndexOf("<slow>") && localIndex < line.IndexOf("</slow>"))
-                        currentSpeed = 0.15f;
-                    else
-                        currentSpeed = defaultTypingSpeed;
-                }
+                if (line.Contains("<slow>") && localIndex > line.IndexOf("<slow>") && localIndex < line.IndexOf("</slow>"))
+                    currentSpeed = 0.15f;
+                else
+                    currentSpeed = defaultTypingSpeed;
             }
 
             targetTextObj.maxVisibleCharacters = counter;
@@ -243,14 +261,26 @@ public class Preending : MonoBehaviour
                 {
                     char c = targetTextObj.textInfo.characterInfo[counter - 1].character;
                     if (!char.IsWhiteSpace(c) && targetTextObj == mainStoryText)
-                    {
                         typeSoundAudio.Play();
-                    }
                 }
             }
             counter++;
             yield return new WaitForSeconds(currentSpeed);
         }
+    }
+
+    private IEnumerator FadeOutAudio(AudioSource audioSource, float duration)
+    {
+        float startVolume = audioSource.volume;
+
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= startVolume * Time.deltaTime / duration;
+            yield return null;
+        }
+
+        audioSource.Stop();
+        audioSource.volume = startVolume; // Reset volume for next time
     }
 
     private IEnumerator CountUpEffect(int finalCount, TextMeshProUGUI targetTextObj)
