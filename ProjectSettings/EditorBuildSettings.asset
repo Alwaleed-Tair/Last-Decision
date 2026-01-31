@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Story.unity
     guid: 85242261276215d4c84717b6b116f836
   - enabled: 1
-    path: Assets/Scenes/GamePlay.unity
+    path: Assets/Scenes/BAD GAMEPLAY.unity
     guid: 2eae2b59154f31f41a4980fe023e8e3f
   - enabled: 1
     path: Assets/Scenes/Victory.unity
