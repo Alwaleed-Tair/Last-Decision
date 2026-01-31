@@ -325,7 +325,7 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         
-        Debug.log("🎬 Fade In - Stage 2");
+        Debug.Log("🎬 Fade In - Stage 2");
         yield return StartCoroutine(FadeToAlpha(0f));
 
         float waitBefore = 1f;
@@ -406,14 +406,15 @@ public class GameManager : MonoBehaviour
         
         Debug.Log("⚖️ Waiting for player decision...");
     }
-    
+
     #endregion
 
     // ========================================================================
     //                                INPUT HANDLING
     // ========================================================================
     #region Input Handling
-    
+    // Replace your current TypewriterEffect and OnSkipClicked with these:
+
     IEnumerator TypewriterEffect(string text)
     {
         if (string.IsNullOrEmpty(text)) yield break;
@@ -422,9 +423,8 @@ public class GameManager : MonoBehaviour
         skipRequested = false;
         dialogueText.text = "";
 
-        // Show skip button once typing starts (but not in Decision state)
-        if (skipButton != null && currentState != GameState.Decision)
-            skipButton.gameObject.SetActive(true);
+        // Hide skip button initially to prevent instant-skipping transitions
+        if (skipButton != null) skipButton.gameObject.SetActive(false);
 
         foreach (char c in text)
         {
@@ -433,6 +433,10 @@ public class GameManager : MonoBehaviour
                 dialogueText.text = text;
                 break;
             }
+
+            // Show button only after the first character is printed
+            if (dialogueText.text.Length == 1 && skipButton != null && currentState != GameState.Decision)
+                skipButton.gameObject.SetActive(true);
 
             if (c == '\n')
             {
@@ -448,7 +452,8 @@ public class GameManager : MonoBehaviour
         }
 
         isTyping = false;
-        // Wait briefly so "finish typing" click doesn't immediately advance
+        // Safety buffer: wait 0.3s so a "finish typing" click doesn't 
+        // accidentally trigger the next state change immediately.
         yield return new WaitForSeconds(0.3f);
         skipRequested = false;
         currentTypewriterCoroutine = null;
@@ -456,8 +461,8 @@ public class GameManager : MonoBehaviour
 
     private void OnSkipClicked()
     {
-        // Don't do anything if text hasn't started yet
-        if (dialogueText.text.Length == 0) return;
+        // HARD LOCK: If no text is visible yet, the button does nothing.
+        if (dialogueText == null || dialogueText.text.Length == 0) return;
 
         PlayButtonClickSound();
 
