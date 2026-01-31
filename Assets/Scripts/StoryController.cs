@@ -38,7 +38,7 @@ public class StoryController : MonoBehaviour
     public float typingVolumeMultiplier = 1.5f;
 
     [Header("Scene Control")]
-    public string nextSceneName = "GamePlay";
+    public string nextSceneName = "MainHub";
 
     private float currentSpeed;
     private bool isStoryFinished = false;
@@ -167,13 +167,18 @@ public class StoryController : MonoBehaviour
         }
     }
 
+
     public void SkipStory()
     {
         if (isFadingOut) return;
-        
+
         if (buttonClickAudio != null)
             buttonClickAudio.PlayOneShot(buttonClickAudio.clip, buttonVolume);
-            
+
+        // 1. Change the destination to the Hub scene name
+        nextSceneName = "MainHub";
+
+        // 2. Start the fade and load the scene
         StartCoroutine(StartFinalFade());
     }
 
