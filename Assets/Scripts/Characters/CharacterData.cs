@@ -8,6 +8,9 @@ public class CharacterData : ScriptableObject
     public enum CharacterType { Human, Robot }
     public CharacterType type;
 
+    [Header("Door Assignment")]
+    public int doorID;
+
     [Header("Stage 1 (Dialogue) Settings")]
     public Sprite backgroundImage;
     [TextArea(3, 10)]
@@ -27,12 +30,23 @@ public class CharacterData : ScriptableObject
     public float frameScale = 1f;
 
     [Header("Stage 3 (Decision) Settings")]
-    public Sprite stage3Background; // خلفية مرحلة القرار
-    public Vector2 stage3Position;  // موقع الشخصية في مرحلة القرار
-    public float stage3Scale = 1f;  // حجم الشخصية في مرحلة القرار
+    public Sprite stage3Background;
+    public Vector2 stage3Position;
+    public float stage3Scale = 1f;
 
     [TextArea(3, 10)]
-    public string stage2DialogueText; // ⭐ النص الخاص بـ Stage 2
+    public string stage2DialogueText;
 
+    [Header("Decision Impact - Object Modifications")]
+    public ObjectModification spareModification;
+    public ObjectModification killModification;
+}
 
+[System.Serializable]
+public class ObjectModification
+{
+    public GameObject imageToAdd;
+    public Vector2 positionOnBackground;
+    public float scale = 1f;
+    public int sortingOrder = 0;
 }
