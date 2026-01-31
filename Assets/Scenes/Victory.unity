@@ -1179,6 +1179,9 @@ MonoBehaviour:
   typeSoundAudio: {fileID: 1512571283}
   signalCountSound: {fileID: 900774054}
   horrorSignalSound: {fileID: 2118358004}
+  typeSoundVolume: 0.6
+  signalCountVolume: 0.8
+  horrorSignalVolume: 0.8
   introText: "SYSTEM: TRIAL COMPLETE ||BEGINNING FINAL EVALUATION\u2026||<slow>DO
     NOT INTERRUPT...</slow>"
   endingA_DevText: Careless. Reckless.||Wrong choice. Again. And again.||The Judge

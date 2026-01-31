@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+
 public class DoorsSticker : MonoBehaviour
 {
     [Header("Sprites")]
     public Sprite spareSprite;
     public Sprite killSprite;
+
 
     [Header("Door Image References")]
     public UnityEngine.UI.Image idealSticker;
@@ -15,6 +17,7 @@ public class DoorsSticker : MonoBehaviour
     public UnityEngine.UI.Image angerSticker;
     public UnityEngine.UI.Image joySticker;
 
+
     [Header("Door Button References")]
     public Button idealBtn;
     public Button controlBtn;
@@ -23,15 +26,23 @@ public class DoorsSticker : MonoBehaviour
     public Button angerBtn;
     public Button joyBtn;
 
+
     [Header("Middle Door Visuals")]
     public GameObject closedDoorImage; // The big image blocking the way
     public Button middleDoorButton;   // The actual door button behind the image
+
+    [Header("Audio")]
+    public GameObject bigDoorOpenSoundObject; // جديد: صوت الباب الكبير
+    
+    private bool bigDoorSoundPlayed = false; // جديد: تتبع الصوت
+
 
     void Start()
     {
         // On Start, we just update the stickers and lock the buttons
         UpdateAllStickers();
     }
+
 
     void Update()
     {
@@ -42,17 +53,26 @@ public class DoorsSticker : MonoBehaviour
         }
     }
 
+
     // ⭐ THIS IS THE FUNCTION FOR YOUR BIG CLOSED DOOR BUTTON
     public void OpenMasterDoor()
     {
         int totalCompleted = UpdateAllStickers();
 
+
         // Check if the player has finished all 6 doors
-        if (totalCompleted >= 5)
+        if (totalCompleted >= 6)
         {
             // Success: Hide the blocking image and enable the final door
             if (closedDoorImage != null) closedDoorImage.SetActive(false);
             if (middleDoorButton != null) middleDoorButton.interactable = true;
+
+            // جديد: تشغيل صوت الباب الكبير (مرة وحدة فقط)
+            if (!bigDoorSoundPlayed)
+            {
+                PlayBigDoorSound();
+                bigDoorSoundPlayed = true;
+            }
 
             UnityEngine.Debug.Log("Master Door Unlocked! The path is clear.");
         }
@@ -62,6 +82,29 @@ public class DoorsSticker : MonoBehaviour
             UnityEngine.Debug.Log("The door is sealed. You have only finished " + totalCompleted + "/6 doors.");
         }
     }
+
+    // جديد: function لتشغيل صوت الباب الكبير
+    private void PlayBigDoorSound()
+    {
+        if (bigDoorOpenSoundObject != null)
+        {
+            AudioSource audio = bigDoorOpenSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+            {
+                audio.PlayOneShot(audio.clip);
+                UnityEngine.Debug.Log("Big Door Sound Played!");
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("Big Door AudioSource or Clip is missing!");
+            }
+        }
+        else
+        {
+            UnityEngine.Debug.LogWarning("Big Door Sound Object is not assigned!");
+        }
+    }
+
 
     private int UpdateAllStickers()
     {
@@ -76,9 +119,11 @@ public class DoorsSticker : MonoBehaviour
         return count;
     }
 
+
     int UpdateDoorState(string doorKey, UnityEngine.UI.Image stickerImage, Button doorBtn)
     {
         int decision = PlayerPrefs.GetInt("Decision_" + doorKey, -1);
+
 
         if (decision == -1)
         {
@@ -98,6 +143,7 @@ public class DoorsSticker : MonoBehaviour
         }
     }
 
+
     public void ResetGameProgress()
     {
         PlayerPrefs.DeleteKey("Decision_Ideal");
@@ -109,6 +155,9 @@ public class DoorsSticker : MonoBehaviour
         PlayerPrefs.DeleteKey("FinalHumansSpared");
         PlayerPrefs.DeleteKey("FinalAiSpared");
         PlayerPrefs.Save();
+
+        // جديد: ريسيت صوت الباب الكبير
+        bigDoorSoundPlayed = false;
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
