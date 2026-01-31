@@ -36,7 +36,7 @@ public class Preending : MonoBehaviour
     [Header("--- AUDIO ---")]
     public AudioSource typeSoundAudio;
     public AudioSource signalCountSound;
-    public AudioSource horrorSignalSound; // ⭐ New: Horror sound for AI reveal
+    public AudioSource horrorSignalSound;
 
     // ================= MESSAGES =================
 
@@ -65,7 +65,6 @@ public class Preending : MonoBehaviour
     {
         LoadGameData();
 
-        // Standardize volumes to match the typing sound
         if (typeSoundAudio != null) typeSoundAudio.volume = 0.03f;
         if (signalCountSound != null) signalCountSound.volume = 0.03f;
 
@@ -97,44 +96,42 @@ public class Preending : MonoBehaviour
         mainStoryText.text = "";
         yield return StartCoroutine(PlayTextSequence(introText, mainStoryText, true, false));
 
-        // 1. Human Signals (Traditional Count Up)
+        // 1. Show ONLY Human Count
         yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
 
-        // 2. Non-Human Signals (Pause then Instant Deep Red Reveal)
+        // 2. Show ONLY Non-Human (AI) Count
         yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
-
         yield return new WaitForSeconds(1.5f);
 
-        mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
-        mainStoryText.ForceMeshUpdate();
-        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount;
-
-        if (aiSpared >= 1)
+        if (aiSpared > 0)
         {
             if (horrorSignalSound != null)
             {
-                horrorSignalSound.volume = 0.03f; // Set a base volume
+                horrorSignalSound.volume = 0.05f;
                 horrorSignalSound.Play();
             }
+            mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
         }
         else
         {
             if (signalCountSound != null) signalCountSound.Play();
+            mainStoryText.text += "0";
         }
 
-        // --- WAIT while the horror sound plays ---
+        mainStoryText.ForceMeshUpdate();
+        mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount;
+
         yield return new WaitForSeconds(2f);
 
-        // ⭐ FADE OUT THE HORROR SOUND before moving on
         if (horrorSignalSound != null && horrorSignalSound.isPlaying)
         {
             yield return StartCoroutine(FadeOutAudio(horrorSignalSound, 0.5f));
         }
 
         yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.7f);
 
         // --- PHASE 2: DEV TALKING ---
         string endingID = DetermineEndingID();
@@ -164,6 +161,7 @@ public class Preending : MonoBehaviour
         }
 
         // --- PHASE 3: SYSTEM CONCLUSION ---
+        // FIXED SYNTAX ERROR: added proper logical operators (||)
         if (endingID == "A" || endingID == "B" || endingID == "C")
         {
             string systemTextToShow = "";
@@ -220,7 +218,6 @@ public class Preending : MonoBehaviour
 
     private IEnumerator TypeLine(string line, TextMeshProUGUI targetTextObj, bool append, bool useFixedSpeed)
     {
-        // Regex adjusted to allow <color> tags but remove custom <slow> tags
         string cleanLine = Regex.Replace(line, @"<slow>|</slow>|\[pause\]", "");
         int startIndex = 0;
 
@@ -272,15 +269,13 @@ public class Preending : MonoBehaviour
     private IEnumerator FadeOutAudio(AudioSource audioSource, float duration)
     {
         float startVolume = audioSource.volume;
-
         while (audioSource.volume > 0)
         {
             audioSource.volume -= startVolume * Time.deltaTime / duration;
             yield return null;
         }
-
         audioSource.Stop();
-        audioSource.volume = startVolume; // Reset volume for next time
+        audioSource.volume = startVolume;
     }
 
     private IEnumerator CountUpEffect(int finalCount, TextMeshProUGUI targetTextObj)
