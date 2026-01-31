@@ -15,7 +15,10 @@ EditorBuildSettings:
     path: Assets/Scenes/Story.unity
     guid: 85242261276215d4c84717b6b116f836
   - enabled: 1
-    path: Assets/Scenes/BAD GAMEPLAY.unity
+    path: Assets/Scenes/MainHub.unity
+    guid: 23ea77de336b098449ed56473a6b8bef
+  - enabled: 1
+    path: Assets/Scenes/GamePlay.unity
     guid: 2eae2b59154f31f41a4980fe023e8e3f
   - enabled: 1
     path: Assets/Scenes/Victory.unity
@@ -26,9 +29,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Final scenes.unity
     guid: 2b4bfc57a676b914a80bd0e9a2056f0f
-  - enabled: 1
-    path: Assets/Scenes/MainHub.unity
-    guid: 23ea77de336b098449ed56473a6b8bef
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
