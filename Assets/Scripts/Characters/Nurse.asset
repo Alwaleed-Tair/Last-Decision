@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Nurse
   m_EditorClassIdentifier: 
   characterName: Pride
+  characterID: Nurse
   type: 1
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: "I don\u2019t have time for doubt\nthis work is my calling\nand lives
-    depend on it."
+  dialogueText: "My shift NEVER ends ! \r\nbut Everything is under control ! "
   characterSprite: {fileID: -3872865832385393104, guid: 504c67065d875dd40a41af8bc1270ef8, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -32,8 +32,9 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -180}
   stage3Scale: 0.45
-  stage2DialogueText: "Trapped in endless white halls\nI fix what\u2019s broken while
-    dreaming of building \nsomething of my own."
+  stage2DialogueText: "Trapped in endless white halls \r\nI fix what\u2019s broken
+    while dreaming of building  \r\nsomething of my own. \r\nmaybe I overdosed my
+    own dreams. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}

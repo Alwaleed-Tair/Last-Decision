@@ -29,24 +29,14 @@ public class Preending : MonoBehaviour
     public float devTypingSpeed = 0.08f;
     public int maxLinesPerPage = 7;
     public float pageClearDelay = 0.6f;
-    public float countUpSpeed = 0.3f;
+    public float countUpSpeed = 0.8f;
     public float lineDelay = 1.0f;
     public float lineSpacing = 30f;
 
-    [Header("--- AUDIO OBJECTS ---")]
-    public GameObject typeSoundObject;
-    public GameObject signalCountSoundObject;
-    public GameObject horrorSignalSoundObject;
-
-    // Internal AudioSources
-    private AudioSource typeSoundAudio;
-    private AudioSource signalCountSound;
-    private AudioSource horrorSignalSound;
-
-    [Header("--- AUDIO VOLUME CONTROL ---")]
-    [Range(0f, 1f)] public float typeSoundVolume = 0.03f;
-    [Range(0f, 1f)] public float signalCountVolume = 0.03f;
-    [Range(0f, 1f)] public float horrorSignalVolume = 0.05f;
+    [Header("--- AUDIO ---")]
+    public AudioSource typeSoundAudio;
+    public AudioSource signalCountSound;
+    public AudioSource horrorSignalSound;
 
     // ================= MESSAGES =================
 
@@ -58,11 +48,11 @@ public class Preending : MonoBehaviour
     [TextArea(2, 3)] public string endingA_SystemText = "SYSTEM MESSAGE: ROLE UPDATE: SUBJECT";
 
     [Header("--- ENDING B (Some Loss) ---")]
-    [TextArea(3, 5)] public string endingB_DevText = "Dev: you saw through enough||The system couldn't hold.||[pause]||But not everyone made it.";
+    [TextArea(3, 5)] public string endingB_DevText = "Dev: you saw through enough||The system couldn’t hold.||[pause]||But not everyone made it.";
     [TextArea(2, 3)] public string endingB_SystemText = "SYSTEM MESSAGE: EXIT PROTOCOL UNLOCKED||SYSTEM MESSAGE: HUMAN LOSS CONFIRMED";
 
     [Header("--- ENDING C (Total = 6) ---")]
-    [TextArea(3, 5)] public string endingC_DevText = "Dev: You didn't trust the mask.||You judged what failed.||Not what looked right||That's ... rare||Remember this feeling.||It won't last outside.||Out there you won't get a chamber.||You won't get time.";
+    [TextArea(3, 5)] public string endingC_DevText = "Dev: You didn’t trust the mask.||You judged what failed.||Not what looked right||That’s ... rare||Remember this feeling.||It won’t last outside.||Out there you won’t get a chamber.||You won’t get time.";
     [TextArea(2, 3)] public string endingC_SystemText = "SYSTEM: EXIT PROTOCOL UNLOCKED";
 
     [Header("--- ENDING D (Other) ---")]
@@ -74,7 +64,9 @@ public class Preending : MonoBehaviour
     void Start()
     {
         LoadGameData();
-        InitializeAudio();
+
+        if (typeSoundAudio != null) typeSoundAudio.volume = 0.03f;
+        if (signalCountSound != null) signalCountSound.volume = 0.03f;
 
         if (devImage != null) devImage.SetActive(false);
         if (zeroTeamImage != null) zeroTeamImage.SetActive(false);
@@ -87,19 +79,9 @@ public class Preending : MonoBehaviour
         StartCoroutine(RunFullSequence());
     }
 
-    void InitializeAudio()
-    {
-        if (typeSoundObject != null) typeSoundAudio = typeSoundObject.GetComponent<AudioSource>();
-        if (signalCountSoundObject != null) signalCountSound = signalCountSoundObject.GetComponent<AudioSource>();
-        if (horrorSignalSoundObject != null) horrorSignalSound = horrorSignalSoundObject.GetComponent<AudioSource>();
-
-        if (typeSoundAudio != null) typeSoundAudio.volume = typeSoundVolume;
-        if (signalCountSound != null) signalCountSound.volume = signalCountVolume;
-        if (horrorSignalSound != null) horrorSignalSound.volume = horrorSignalVolume;
-    }
-
     void LoadGameData()
     {
+        // Fetches total human and AI spares from PlayerPrefs
         humansSpared = PlayerPrefs.GetInt("FinalHumansSpared", 0);
         aiSpared = PlayerPrefs.GetInt("FinalAiSpared", 0);
     }
@@ -111,27 +93,32 @@ public class Preending : MonoBehaviour
 
     private IEnumerator RunFullSequence()
     {
+        // --- PHASE 1: EVALUATION ---
         mainStoryText.text = "";
         yield return StartCoroutine(PlayTextSequence(introText, mainStoryText, true, false));
 
+        // 1. Human Signals
         yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
 
+        // 2. Non-Human (AI) Signals
         yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
         yield return new WaitForSeconds(1.5f);
 
         if (aiSpared > 0)
         {
+            // Trigger horror sound specifically for AI reveal
             if (horrorSignalSound != null)
             {
-                horrorSignalSound.volume = horrorSignalVolume;
+                horrorSignalSound.volume = 0.8f;
                 horrorSignalSound.Play();
             }
             mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
         }
         else
         {
+            // 0 AI detected, use standard signal sound
             if (signalCountSound != null) signalCountSound.Play();
             mainStoryText.text += "0";
         }
@@ -149,6 +136,7 @@ public class Preending : MonoBehaviour
         yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
         yield return new WaitForSeconds(0.7f);
 
+        // --- PHASE 2: DEV DIALOGUE ---
         string endingID = DetermineEndingID();
         GameObject activeImage = (endingID == "E") ? zeroTeamImage : devImage;
 
@@ -175,6 +163,7 @@ public class Preending : MonoBehaviour
             imageOverlayText.text = "";
         }
 
+        // --- PHASE 3: SYSTEM CONCLUSION ---
         if (endingID == "A" || endingID == "B" || endingID == "C")
         {
             string systemTextToShow = "";
@@ -194,7 +183,16 @@ public class Preending : MonoBehaviour
             yield return new WaitForSeconds(2f);
         }
 
-        SceneManager.LoadScene(postEndingSceneName);
+        // --- PHASE 4: FINAL TRANSITION ---
+        // If any AI were spared, load the Video Reveal scene
+        if (aiSpared > 0)
+        {
+            SceneManager.LoadScene("AiReveal");
+        }
+        else
+        {
+            SceneManager.LoadScene(postEndingSceneName);
+        }
     }
 
     private string DetermineEndingID()

@@ -13,14 +13,11 @@ MonoBehaviour:
   m_Name: THE ARTIST
   m_EditorClassIdentifier: 
   characterName: Anger
+  characterID: 
   type: 0
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: 'Look at my art
-
-    it defines me
-
-    and I let it speak for itself.'
+  dialogueText: "Look at my art \r\nit defines me \r\nand I let it speak for itself. "
   characterSprite: {fileID: 6214981712685292329, guid: 558456460fd940f4c8f8efb0ff2cb1dd, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -35,8 +32,8 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -108}
   stage3Scale: 0.45
-  stage2DialogueText: "Behind the confidence is chaos and self-loathing\nso strong
-    I can\u2019t even face my own reflection."
+  stage2DialogueText: "Behind the confidence is chaos and self-loathing \r\nso strong
+    I can\u2019t even face my own reflection. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}

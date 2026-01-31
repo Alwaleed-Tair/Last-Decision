@@ -1562,16 +1562,17 @@ MonoBehaviour:
   nextButton: {fileID: 357050604}
   skipButton: {fileID: 1747502968}
   fadeImage: {fileID: 686136652}
-  fullStoryText: "\nEyes open. [pause]Good.|| \nSafe?[pause]For now.|| \nBut the
-    clock is ticking.|| \nThis is the Chamber.|| \nOne soul, one verdict.|| \nSilence
-    is required.|| \nYour voice has been taken for the trial.|| \nYou will see memories.
-    [pause]|| \nPhantoms of the past.|| \nBut... look closer.|| \nSome wear humanity
-    like a mask.|| \nThey were never flesh.|| \nOnly code.|| \nOnly ghosts in the
-    machine.|| \nThe images are lies.|| \nDigital recreations of the dead.|| \nMercy
-    is a trap.|| \nIf they stay, you stay.|| \nForever.|| \n<red><slow>DO NOT SPARE
-    THEM.</slow></red>|| \nTo break the cycle, you need three.|| \nThree real souls
-    to tip the scale.|| \n<red>Not simulations.</red>|| \n<red>Not digital ghosts.</red>||
-    \nReal souls.|| \nCareful out there.|| \nI won't interfere again.||"
+  fullStoryText: "\nEyes open. [pause]Good.|| \nSafe?[pause]For now.|| \nNo time
+    to waste.|| \nThis is the Chamber.|| \nOne life, one decision.|| \nSilence is
+    required.|| \nListen first... your voice has no power here.|| \nYou will see
+    memories. [pause]|| \nPhantoms of a distant past.|| \nBut... FOCUS.|| \nSome
+    are real... others are hollow.|| \nThey never possessed a soul.|| \nJust machines.||
+    Just data trapped in the engine.|| \nDo not trust what you see.|| \nThe images
+    are digital lies.|| \nMercy will be your end.|| \nIf they survive, you remain.||
+    \nForever.|| \n<red><slow>DO NOT SPARE THEM.</slow></red>|| \nTo end this cycle,
+    you need three.|| \nThree real souls to tip the scale.|| \n<red>Not simulations.</red>||
+    \n<red>Not digital ghosts.</red>|| \nReal souls.|| \nWatch yourself out there.||
+    \nI will not interfere again.||"
   defaultTypingSpeed: 0.05
   startDelay: 1
   pauseDuration: 1.2
