@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f385b289e3ea8f47b2da39a026bc134, type: 3}
   m_Name: MiddleAgeMan
   m_EditorClassIdentifier: 
-  characterName: MiddleAgeMan
+characterName: MiddleAgeMan
   type: 0
   doorID: 0
-  backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: "Make it quickI have responsibilities and no time for distractions.
+  backgroundImage: {fileID: 5251809639266272723, guid: 4e9cac05a9791144abdb79fb21654873, type: 3}
+  dialogueText: "Make it quick I have responsibilities and no time for distractions.
     \nCheck my memories."
   characterSprite: {fileID: 6231675869601175388, guid: 84f7bce62952c254ebe37f516b3e75be, type: 3}
   spawnPosition: {x: 0, y: 60}

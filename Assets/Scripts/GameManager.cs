@@ -5,8 +5,8 @@ using TMPro;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// GameManager - نسخة CanvasGroup Fade
-/// استخدم هذي إذا الـ Image.color ما اشتغل
+/// GameManager - CanvasGroup Fade Version (RESOLVED)
+/// Combines improvements from both branches
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -86,7 +86,6 @@ public class GameManager : MonoBehaviour
     
     private Coroutine currentTypewriterCoroutine;
     
-    // ⭐ CanvasGroup للـ Fade (بديل للـ Image.color)
     private CanvasGroup fadeCanvasGroup;
     #endregion
 
@@ -96,14 +95,13 @@ public class GameManager : MonoBehaviour
     #region Unity Lifecycle
     private void Start()
     {
-        // 🔧 Setup Fade - باستخدام CanvasGroup
+        // Setup Fade - Using CanvasGroup
         if (fadeImage == null)
         {
             Debug.LogError("❌ FADE IMAGE IS NULL! Assign it in Inspector!");
             return;
         }
 
-        // إضافة أو الحصول على CanvasGroup
         fadeCanvasGroup = fadeImage.GetComponent<CanvasGroup>();
         if (fadeCanvasGroup == null)
         {
@@ -111,10 +109,9 @@ public class GameManager : MonoBehaviour
             Debug.Log("✅ Added CanvasGroup to FadeImage");
         }
         
-        // ⭐ Setup أولي
         fadeImage.gameObject.SetActive(true);
-        fadeImage.color = Color.black; // اللون أسود
-        fadeCanvasGroup.alpha = 1f; // Alpha كامل (شاشة سوداء)
+        fadeImage.color = Color.black;
+        fadeCanvasGroup.alpha = 1f;
         fadeCanvasGroup.blocksRaycasts = true;
         fadeCanvasGroup.interactable = false;
         
@@ -131,13 +128,11 @@ public class GameManager : MonoBehaviour
         
         UpdateCounterDisplay();
         
-        // ⭐ Fade In إلى غرفة الأبواب
         StartCoroutine(InitialFadeIn());
     }
 
     private void Update()
     {
-        // ⏱️ Photo Timer
         if (isPhotoTimerActive && currentState == GameState.Photos)
         {
             photoTimer -= Time.deltaTime;
@@ -208,6 +203,9 @@ public class GameManager : MonoBehaviour
         isPhotoTimerActive = false;
         isTyping = false;
         skipRequested = false;
+
+        // Hide skip button immediately until typewriter is ready
+        if (skipButton != null) skipButton.gameObject.SetActive(false);
 
         Debug.Log($"🔄 State Changed: {newState}");
 
@@ -327,7 +325,7 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         
-        Debug.Log("🎬 Fade In - Stage 2");
+        Debug.log("🎬 Fade In - Stage 2");
         yield return StartCoroutine(FadeToAlpha(0f));
 
         float waitBefore = 1f;
@@ -416,23 +414,6 @@ public class GameManager : MonoBehaviour
     // ========================================================================
     #region Input Handling
     
-    private void OnSkipClicked()
-    {
-        PlayButtonClickSound();
-
-        if (isTyping)
-        {
-            if (dialogueText.text.Length > 0)
-            {
-                skipRequested = true;
-            }
-        }
-        else
-        {
-            AdvanceGameState();
-        }
-    }
-
     IEnumerator TypewriterEffect(string text)
     {
         if (string.IsNullOrEmpty(text)) yield break;
@@ -440,6 +421,10 @@ public class GameManager : MonoBehaviour
         isTyping = true;
         skipRequested = false;
         dialogueText.text = "";
+
+        // Show skip button once typing starts (but not in Decision state)
+        if (skipButton != null && currentState != GameState.Decision)
+            skipButton.gameObject.SetActive(true);
 
         foreach (char c in text)
         {
@@ -463,9 +448,27 @@ public class GameManager : MonoBehaviour
         }
 
         isTyping = false;
-        yield return new WaitForSeconds(0.2f);
+        // Wait briefly so "finish typing" click doesn't immediately advance
+        yield return new WaitForSeconds(0.3f);
         skipRequested = false;
         currentTypewriterCoroutine = null;
+    }
+
+    private void OnSkipClicked()
+    {
+        // Don't do anything if text hasn't started yet
+        if (dialogueText.text.Length == 0) return;
+
+        PlayButtonClickSound();
+
+        if (isTyping)
+        {
+            skipRequested = true;
+        }
+        else
+        {
+            AdvanceGameState();
+        }
     }
 
     private void AdvanceGameState()
@@ -699,6 +702,7 @@ public class GameManager : MonoBehaviour
         if (prevButton != null) 
             prevButton.gameObject.SetActive(active);
 
+        // Hide skipButton if in Decision state, regardless of 'active' param
         if (skipButton != null)
         {
             if (currentState == GameState.Decision)
@@ -760,12 +764,6 @@ public class GameManager : MonoBehaviour
     // ========================================================================
     #region Fade System
     
-    /// <summary>
-    /// تأثير Fade باستخدام CanvasGroup.alpha
-    /// أسرع وأكثر استقراراً من Image.color
-    /// targetAlpha = 0 → شفاف (Fade In)
-    /// targetAlpha = 1 → أسود (Fade Out)
-    /// </summary>
     IEnumerator FadeToAlpha(float targetAlpha)
     {
         if (fadeCanvasGroup == null)
@@ -778,9 +776,8 @@ public class GameManager : MonoBehaviour
         Debug.Log($"🎬 FADE {direction} Started");
         Debug.Log($"   Current Alpha: {fadeCanvasGroup.alpha} → Target: {targetAlpha}");
 
-        // تأكد من تفعيل الـ GameObject
         fadeImage.gameObject.SetActive(true);
-        fadeCanvasGroup.blocksRaycasts = true; // منع التفاعل
+        fadeCanvasGroup.blocksRaycasts = true;
         fadeCanvasGroup.interactable = false;
         
         float startAlpha = fadeCanvasGroup.alpha;
@@ -789,14 +786,12 @@ public class GameManager : MonoBehaviour
 
         Debug.Log($"   Duration: {duration}s");
 
-        // Loop التدرج
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             fadeCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
             
-            // طباعة كل 10 فريمات
             if (Time.frameCount % 10 == 0)
             {
                 Debug.Log($"   Progress: {t:F2} | Alpha: {fadeCanvasGroup.alpha:F3}");
@@ -805,13 +800,11 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        // التأكد من القيمة النهائية
         fadeCanvasGroup.alpha = targetAlpha;
-        fadeCanvasGroup.blocksRaycasts = false; // السماح بالتفاعل
+        fadeCanvasGroup.blocksRaycasts = false;
         
         Debug.Log($"✅ FADE {direction} Complete | Final Alpha: {fadeCanvasGroup.alpha}");
 
-        // إيقاف GameObject إذا وصلنا للشفاف الكامل
         if (targetAlpha == 0f)
         {
             fadeImage.gameObject.SetActive(false);
