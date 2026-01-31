@@ -1046,7 +1046,7 @@ MonoBehaviour:
   maskHappy: {fileID: 138383218}
   maskSad: {fileID: 1020999424}
   maskMad: {fileID: 1946244085}
-  maskSwitchInterval: 0.5
+  maskSwitchInterval: 0.8
   loadingLetterSpeed: 0.08
   normalLetterSpeed: 0.12
   dotSpeed: 0.35

@@ -4,6 +4,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+
 public class GameManager : MonoBehaviour
 {
     // ========================================================================
@@ -12,8 +13,10 @@ public class GameManager : MonoBehaviour
     #region Definitions & UI Variables
     public enum GameState { Dialogue, Photos, Decision }
 
+
     [Header("Current State")]
     public GameState currentState;
+
 
     [Header("UI Elements")]
     public UnityEngine.UI.Image fadeImage;
@@ -25,29 +28,39 @@ public class GameManager : MonoBehaviour
     public UnityEngine.UI.Image characterDisplay;
     public GameObject textBar;
 
+
     [Header("Navigation Buttons")]
-    public Button nextButton;
-    public Button prevButton;
-    public Button skipButton;
+    public Button nextButton;          // للصور فقط (Stage 2)
+    public Button prevButton;          // للصور فقط (Stage 2)
+    public Button nextSentenceButton;  // للنصوص (Stage 1 و 2)
+    public Button skipButton;          // تخطي المشهد (Stage 1 و 2)
+
 
     [Header("Decision UI")]
     public GameObject decisionPanel;
     public Button spareButton;
     public Button killButton;
 
+
     [Header("Counter UI")]
     public TextMeshProUGUI counterText;
     #endregion
+
 
     #region Settings & Audio Variables
     [Header("Typewriter Settings")]
     public float typewriterSpeed = 0.12f;
 
-    [Header("Audio Sources")]
-    public AudioSource backgroundMusicSource;
-    public AudioSource typewriterSoundSource;
-    public AudioSource buttonClickSoundSource;
-    public AudioSource suddenSoundSource;
+
+    [Header("Audio Objects")]
+    public GameObject backgroundMusicObject;
+    public GameObject typewriterSoundObject;
+    public GameObject buttonClickSoundObject;
+    public GameObject suddenSoundObject;
+    public GameObject doorOpenSoundObject;
+    public GameObject killDelaySoundObject;
+    public GameObject bigDoorOpenSoundObject; // جديد: صوت الباب الكبير
+
 
     [Header("Audio Volume Settings")]
     public float masterVolume = 1f;
@@ -55,9 +68,14 @@ public class GameManager : MonoBehaviour
     public float sfxVolume = 0.8f;
     public float typewriterVolume = 1f;
 
+
     [Header("Scene Settings")]
     public string nextSceneName = "EndScene";
+    
+    [Header("Big Door Settings")]
+    public int bigDoorID = 7; // رقم الباب الكبير (غيّره حسب الباب عندك)
     #endregion
+
 
     #region Game Data Variables
     [Header("Game Data")]
@@ -65,18 +83,29 @@ public class GameManager : MonoBehaviour
     private int currentCharacterIndex = 0;
     private int currentPhotoIndex = 0;
 
+
     private int visibleTeamCount = 0;
     private int hiddenHumanCount = 0;
 
-    // Timer & Skip Variables
+
+    // Timer Variables
     private float photoTimerDuration = 6f;
     private float photoTimer = 0f;
     private bool isPhotoTimerActive = false;
+
+
+    // Typewriter & Button Flags
     private bool isTyping = false;
-    private bool skipRequested = false;
+    private bool cancelTyping = false;      // NextSentence يحطها true حتى الـ Typewriter يكمل النص فوراً
+    private bool waitForNextClick = false;   // بعد انتهاء النص الـ Coroutine ينتظر هذي حتى يضغط NextSentence
+    private bool isFadingOut = false;        // وقت الـ StartFinalFade شغال ما نسمح بأي ضغطة
+
 
     private bool suddenSoundPlayed = false;
+    private bool doorSoundPlayedForCurrentCharacter = false; // لتتبع صوت الباب العادي
+    private bool bigDoorSoundPlayed = false; // جديد: لتتبع صوت الباب الكبير (يشتغل مرة وحدة في كل اللعبة)
     #endregion
+
 
     // ========================================================================
     //                                 UNITY LIFECYCLE
@@ -87,13 +116,15 @@ public class GameManager : MonoBehaviour
         InitializeAudio();
         SetupButtons();
 
-        SetButtonsActive(false);
+
         if (decisionPanel != null) decisionPanel.SetActive(false);
 
-        // Initial update of the counter from saved data
+
         UpdateCounterDisplay();
 
+
         string selectedName = PlayerPrefs.GetString("SelectedCharacter", "");
+
 
         for (int i = 0; i < allCharacters.Length; i++)
         {
@@ -104,8 +135,10 @@ public class GameManager : MonoBehaviour
             }
         }
 
+
         SetState(GameState.Dialogue);
     }
+
 
     private void Update()
     {
@@ -121,6 +154,7 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+
     // ========================================================================
     //                                 STATE MACHINE
     // ========================================================================
@@ -131,44 +165,98 @@ public class GameManager : MonoBehaviour
         StopAllCoroutines();
         isPhotoTimerActive = false;
         isTyping = false;
-        skipRequested = false;
+        cancelTyping = false;
+        waitForNextClick = false;
+        isFadingOut = false;
 
+
+        // إخفاء كل الزرين أولاً
+        if (nextButton != null) nextButton.gameObject.SetActive(false);
+        if (prevButton != null) prevButton.gameObject.SetActive(false);
+        if (nextSentenceButton != null) nextSentenceButton.gameObject.SetActive(false);
         if (skipButton != null) skipButton.gameObject.SetActive(false);
+        if (spareButton != null) spareButton.gameObject.SetActive(false);
+        if (killButton != null) killButton.gameObject.SetActive(false);
+        if (decisionPanel != null) decisionPanel.SetActive(false);
+
+
+        // ريسيت صوت الباب لما ننتقل لشخصية جديدة
+        if (newState == GameState.Dialogue)
+        {
+            doorSoundPlayedForCurrentCharacter = false;
+        }
+
 
         switch (currentState)
         {
             case GameState.Dialogue:
-                SetButtonsActive(false);
-                if (decisionPanel != null) decisionPanel.SetActive(false);
+                // Stage 1: NextSentence + Skip فقط
+                if (nextSentenceButton != null) nextSentenceButton.gameObject.SetActive(true);
+                if (skipButton != null) skipButton.gameObject.SetActive(true);
                 if (textBar != null) textBar.SetActive(true);
                 StartCoroutine(HandleDialogueState());
                 break;
 
+
             case GameState.Photos:
-                SetButtonsActive(true);
-                if (decisionPanel != null) decisionPanel.SetActive(false);
+                // Stage 2: Next + Prev + NextSentence + Skip
+                if (nextButton != null) nextButton.gameObject.SetActive(true);
+                if (prevButton != null) prevButton.gameObject.SetActive(true);
+                if (nextSentenceButton != null) nextSentenceButton.gameObject.SetActive(true);
+                if (skipButton != null) skipButton.gameObject.SetActive(true);
                 if (textBar != null) textBar.SetActive(true);
                 suddenSoundPlayed = false;
                 StartCoroutine(HandlePhotosState());
                 break;
 
+
             case GameState.Decision:
-                SetButtonsActive(false);
+                // Stage 3: Spare + Kill فقط بعد الـ Fade، باقي الزرين مخفية
+                if (textBar != null) textBar.SetActive(false);
                 StartCoroutine(HandleDecisionState());
                 break;
         }
     }
     #endregion
 
+
+    // ========================================================================
+    //                                 COROUTINES
+    // ========================================================================
     #region Coroutines
     IEnumerator HandleDialogueState()
     {
         if (allCharacters == null || allCharacters.Length == 0) yield break;
         if (currentCharacterIndex >= allCharacters.Length) yield break;
 
+
         CharacterData data = allCharacters[currentCharacterIndex];
         imageFrame.SetActive(false);
         if (data.backgroundImage != null) backgroundDisplay.sprite = data.backgroundImage;
+
+
+        // تحقق: هل هذا الباب الكبير؟
+        bool isBigDoor = (data.doorID == bigDoorID);
+        
+        // صوت فتح الباب يشتغل مرة وحدة فقط لكل شخصية
+        if (!doorSoundPlayedForCurrentCharacter)
+        {
+            if (isBigDoor && !bigDoorSoundPlayed)
+            {
+                // الباب الكبير وأول مرة يفتح
+                PlayBigDoorOpenSound();
+                bigDoorSoundPlayed = true;
+            }
+            else if (!isBigDoor)
+            {
+                // باب عادي
+                PlayDoorOpenSound();
+            }
+            // إذا كان الباب الكبير لكن bigDoorSoundPlayed = true، ما نشغل الصوت
+            
+            doorSoundPlayedForCurrentCharacter = true;
+        }
+
 
         if (data.characterSprite != null && characterDisplay != null)
         {
@@ -182,29 +270,37 @@ public class GameManager : MonoBehaviour
             characterDisplay.gameObject.SetActive(true);
         }
 
-        yield return StartCoroutine(FadeEffect(0f));
-        yield return StartCoroutine(TypewriterEffect(data.dialogueText));
 
-        float waitTimer = 2f;
-        while (waitTimer > 0 && !skipRequested)
+        yield return StartCoroutine(FadeEffect(0f));
+        yield return StartCoroutine(TypewriterByLine(data.dialogueText));
+
+
+        // النص كامل انتهى، ننتظر ضغطة NextSentence للـ انتقال للـ Photos
+        waitForNextClick = true;
+        while (waitForNextClick)
         {
-            waitTimer -= Time.deltaTime;
             yield return null;
         }
-        skipRequested = false;
+
+
+        // اللاعب ضغط NextSentence → ننتقل للـ Photos
         SetState(GameState.Photos);
     }
+
 
     IEnumerator HandlePhotosState()
     {
         if (allCharacters == null || allCharacters.Length == 0) yield break;
         CharacterData data = allCharacters[currentCharacterIndex];
 
+
         yield return StartCoroutine(FadeEffect(1f));
         yield return new WaitForSeconds(0.5f);
 
+
         dialogueText.text = "";
         if (data.stage2Background != null) backgroundDisplay.sprite = data.stage2Background;
+
 
         if (characterDisplay != null)
         {
@@ -216,6 +312,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
+
         imageFrame.SetActive(true);
         RectTransform frameRT = imageFrame.GetComponent<RectTransform>();
         if (frameRT != null)
@@ -224,6 +321,7 @@ public class GameManager : MonoBehaviour
             frameRT.localScale = Vector3.one * data.frameScale;
         }
 
+
         currentPhotoIndex = 0;
         if (data.storyImages != null && data.storyImages.Length > 0)
         {
@@ -231,18 +329,24 @@ public class GameManager : MonoBehaviour
             UpdateButtonStates(data);
         }
 
+
         yield return new WaitForSeconds(0.5f);
         yield return StartCoroutine(FadeEffect(0f));
 
-        float waitBefore = 1f;
-        while (waitBefore > 0 && !skipRequested) { waitBefore -= Time.deltaTime; yield return null; }
-        skipRequested = false;
 
-        yield return StartCoroutine(TypewriterEffect(data.stage2DialogueText));
+        yield return new WaitForSeconds(1f);
 
-        float waitAfter = 1f;
-        while (waitAfter > 0 && !skipRequested) { waitAfter -= Time.deltaTime; yield return null; }
-        skipRequested = false;
+
+        yield return StartCoroutine(TypewriterByLine(data.stage2DialogueText));
+
+
+        // النص كامل انتهى، ننتظر ضغطة NextSentence قبل التوقيت يبدأ
+        waitForNextClick = true;
+        while (waitForNextClick)
+        {
+            yield return null;
+        }
+
 
         if (!suddenSoundPlayed && UnityEngine.Random.value > 0.5f)
         {
@@ -250,8 +354,11 @@ public class GameManager : MonoBehaviour
             suddenSoundPlayed = true;
         }
 
+
+        // بدأ التوقيت
         photoTimer = photoTimerDuration;
         isPhotoTimerActive = true;
+
 
         while (isPhotoTimerActive && currentState == GameState.Photos)
         {
@@ -259,18 +366,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
     IEnumerator HandleDecisionState()
     {
         yield return StartCoroutine(FadeEffect(1f));
-        if (textBar != null) textBar.SetActive(false);
         dialogueText.text = "";
         yield return new WaitForSeconds(0.3f);
+
 
         imageFrame.SetActive(false);
         CharacterData data = allCharacters[currentCharacterIndex];
 
+
         if (data.stage3Background != null)
             backgroundDisplay.sprite = data.stage3Background;
+
 
         if (characterDisplay != null)
         {
@@ -282,12 +392,32 @@ public class GameManager : MonoBehaviour
             }
         }
 
+
+        // نظهر Spare و Kill بعد ما كل شي جاهز
         if (decisionPanel != null) decisionPanel.SetActive(true);
         if (spareButton != null) spareButton.gameObject.SetActive(true);
         if (killButton != null) killButton.gameObject.SetActive(true);
 
+
         yield return StartCoroutine(FadeEffect(0f));
     }
+
+
+    // الـ Coroutine حق Skip — يسوي Fade للأسود ثم ينتقل للـ State التالي
+    IEnumerator StartFinalFade()
+    {
+        isFadingOut = true;
+        yield return StartCoroutine(FadeEffect(1f));
+        isFadingOut = false;
+
+
+        // بعد الـ Fade ننتقل للـ State التالي
+        if (currentState == GameState.Dialogue)
+            SetState(GameState.Photos);
+        else if (currentState == GameState.Photos)
+            SetState(GameState.Decision);
+    }
+
 
     IEnumerator FadeAndChangeCharacter()
     {
@@ -295,79 +425,117 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         SetState(GameState.Dialogue);
     }
+
+
     #endregion
+
 
     // ========================================================================
     //                                 INPUT HANDLING
     // ========================================================================
     #region Input Handling
-    IEnumerator TypewriterEffect(string text)
+    // كل سطر يكتب حرف حرف، بعدين ينتظر ضغطة NextSentence، بعدين يحذف ويكتب السطر التالي
+    IEnumerator TypewriterByLine(string text)
     {
         if (string.IsNullOrEmpty(text)) yield break;
 
-        isTyping = true;
-        skipRequested = false;
-        dialogueText.text = "";
 
-        if (skipButton != null && currentState != GameState.Decision)
-            skipButton.gameObject.SetActive(true);
+        // نفصل النص على السطور - نستخدم \n العادي أو الـ line breaks الحقيقية
+        string[] lines = text.Split(new string[] { "\\n", "\n" }, System.StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (char c in text)
+
+        for (int i = 0; i < lines.Length; i++)
         {
-            if (skipRequested)
-            {
-                dialogueText.text = text;
-                break;
-            }
+            string line = lines[i].Trim(); // نحذف المسافات الزايدة
+            if (string.IsNullOrEmpty(line)) continue; // نتخطى السطور الفاضية
+            
+            dialogueText.text = "";
+            isTyping = true;
+            cancelTyping = false;
 
-            if (c == '\n') dialogueText.text += c;
-            else
+
+            // نكتب السطر حرف حرف
+            foreach (char c in line)
             {
+                if (cancelTyping)
+                {
+                    dialogueText.text = line; // نكمل السطر فوراً
+                    break;
+                }
+
+
                 dialogueText.text += c;
                 PlayTypewriterSound();
+                yield return new WaitForSeconds(typewriterSpeed);
             }
-            yield return new WaitForSeconds(typewriterSpeed);
-        }
 
-        isTyping = false;
-        yield return new WaitForSeconds(0.3f);
-        skipRequested = false;
+
+            isTyping = false;
+            cancelTyping = false;
+
+
+            // بعد كل سطر (حتى الأخير) ننتظر ضغطة NextSentence
+            waitForNextClick = true;
+            while (waitForNextClick)
+            {
+                yield return null;
+            }
+            
+            // بعد الضغط، نحذف النص ونكتب السطر التالي
+            dialogueText.text = "";
+        }
     }
 
+
+    // زر NextSentence
+    private void OnNextSentenceClicked()
+    {
+        // إذا كان الـ Fade شغال (بعد ضغط Skip) لا نسوي شي
+        if (isFadingOut) return;
+
+
+        if (isTyping)
+        {
+            // النص يكتب → نوقفه ونكمل النص فوراً
+            cancelTyping = true;
+        }
+        else if (waitForNextClick)
+        {
+            // النص انتهى والـ Coroutine ينتظر → نعدي للـ State التالي
+            waitForNextClick = false;
+            PlayButtonClickSound();
+        }
+    }
+
+
+    // زر Skip — يسوي Fade ثم ينتقل للـ State التالي
     private void OnSkipClicked()
     {
-        if (dialogueText.text.Length == 0) return;
+        // إذا كان الـ Fade شغال لا نسوي شي
+        if (isFadingOut) return;
+
+
         PlayButtonClickSound();
-
-        if (isTyping) skipRequested = true;
-        else AdvanceGameState();
+        // نشغل الـ StartFinalFade الذي يسوي Fade ثم ينتقل
+        StartCoroutine(StartFinalFade());
     }
 
-    private void AdvanceGameState()
-    {
-        if (isTyping) return;
-        StopAllCoroutines();
-        isTyping = false;
-        skipRequested = false;
-
-        if (currentState == GameState.Dialogue) SetState(GameState.Photos);
-        else if (currentState == GameState.Photos) SetState(GameState.Decision);
-    }
 
     private void OnNextPhotoClicked() { PlayButtonClickSound(); NextPhoto(); }
     private void OnPrevPhotoClicked() { PlayButtonClickSound(); PrevPhoto(); }
     private void OnSpareButtonClicked() { PlayButtonClickSound(); OnSparePressed(); }
     private void OnKillButtonClicked() { PlayButtonClickSound(); OnKillPressed(); }
 
+
     public void OnSparePressed()
     {
         if (currentState != GameState.Decision) return;
         CharacterData data = allCharacters[currentCharacterIndex];
 
-        // 1. Save decision for the sticker
+
         PlayerPrefs.SetInt("Decision_" + data.characterName, 1);
 
-        // 2. Increment counts based on type
+
         if (data.type == CharacterData.CharacterType.Human)
         {
             int hCount = PlayerPrefs.GetInt("FinalHumansSpared", 0);
@@ -379,32 +547,60 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("FinalAiSpared", aCount + 1);
         }
 
+
         PlayerPrefs.Save();
-
-        // Refresh counter UI immediately
         UpdateCounterDisplay();
-
+        
+        // الـ Fade يبدأ مباشرة
         StartCoroutine(FadeAndReturnToHub());
     }
+
 
     public void OnKillPressed()
     {
         if (currentState != GameState.Decision) return;
         CharacterData data = allCharacters[currentCharacterIndex];
 
-        // SAVE: 0 for Kill
+
         PlayerPrefs.SetInt("Decision_" + data.characterName, 0);
         PlayerPrefs.Save();
 
+
+        // الصوت يشتغل لحاله (بدون coroutine منفصلة)
+        StartCoroutine(PlayKillSoundDelayed());
+        
+        // الـ Fade يبدأ مباشرة
         StartCoroutine(FadeAndReturnToHub());
     }
 
+
+    // Coroutine للصوت بس (منفصل تماماً)
+    IEnumerator PlayKillSoundDelayed()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        if (killDelaySoundObject != null)
+        {
+            AudioSource audio = killDelaySoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+            {
+                audio.PlayOneShot(audio.clip);
+            }
+        }
+    }
+
+
+    // الـ Fade والانتقال (نفس الشي للـ Spare والـ Kill)
     IEnumerator FadeAndReturnToHub()
     {
         yield return StartCoroutine(FadeEffect(1f));
+        yield return new WaitForSeconds(1.5f); // وقت إضافي قبل الانتقال
         SceneManager.LoadScene("MainHub");
     }
+
+
     #endregion
+
 
     // ========================================================================
     //                                 HELPERS
@@ -412,56 +608,83 @@ public class GameManager : MonoBehaviour
     #region Helpers & UI
     private void InitializeAudio()
     {
-        if (backgroundMusicSource != null)
+        if (backgroundMusicObject != null)
         {
-            backgroundMusicSource.volume = musicVolume * masterVolume;
-            if (!backgroundMusicSource.isPlaying) backgroundMusicSource.Play();
+            AudioSource bg = backgroundMusicObject.GetComponent<AudioSource>();
+            if (bg != null)
+            {
+                bg.volume = musicVolume * masterVolume;
+                if (!bg.isPlaying) bg.Play();
+            }
         }
     }
 
+
     private void PlayTypewriterSound()
     {
-        if (typewriterSoundSource != null && typewriterSoundSource.clip != null)
-            typewriterSoundSource.PlayOneShot(typewriterSoundSource.clip, typewriterVolume);
+        if (typewriterSoundObject != null)
+        {
+            AudioSource audio = typewriterSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+                audio.PlayOneShot(audio.clip, typewriterVolume);
+        }
     }
+
 
     private void PlayButtonClickSound()
     {
-        if (buttonClickSoundSource != null && buttonClickSoundSource.clip != null)
-            buttonClickSoundSource.PlayOneShot(buttonClickSoundSource.clip);
+        if (buttonClickSoundObject != null)
+        {
+            AudioSource audio = buttonClickSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+                audio.PlayOneShot(audio.clip);
+        }
     }
+
 
     private void PlaySuddenSound()
     {
-        if (suddenSoundSource != null && suddenSoundSource.clip != null)
-            suddenSoundSource.PlayOneShot(suddenSoundSource.clip);
+        if (suddenSoundObject != null)
+        {
+            AudioSource audio = suddenSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+                audio.PlayOneShot(audio.clip);
+        }
     }
+
+
+    private void PlayDoorOpenSound()
+    {
+        if (doorOpenSoundObject != null)
+        {
+            AudioSource audio = doorOpenSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+                audio.PlayOneShot(audio.clip);
+        }
+    }
+
+    // جديد: function لصوت الباب الكبير
+    private void PlayBigDoorOpenSound()
+    {
+        if (bigDoorOpenSoundObject != null)
+        {
+            AudioSource audio = bigDoorOpenSoundObject.GetComponent<AudioSource>();
+            if (audio != null && audio.clip != null)
+                audio.PlayOneShot(audio.clip);
+        }
+    }
+
 
     private void SetupButtons()
     {
         if (nextButton != null) { nextButton.onClick.RemoveAllListeners(); nextButton.onClick.AddListener(OnNextPhotoClicked); }
         if (prevButton != null) { prevButton.onClick.RemoveAllListeners(); prevButton.onClick.AddListener(OnPrevPhotoClicked); }
+        if (nextSentenceButton != null) { nextSentenceButton.onClick.RemoveAllListeners(); nextSentenceButton.onClick.AddListener(OnNextSentenceClicked); }
+        if (skipButton != null) { skipButton.onClick.RemoveAllListeners(); skipButton.onClick.AddListener(OnSkipClicked); }
         if (spareButton != null) { spareButton.onClick.RemoveAllListeners(); spareButton.onClick.AddListener(OnSpareButtonClicked); }
         if (killButton != null) { killButton.onClick.RemoveAllListeners(); killButton.onClick.AddListener(OnKillButtonClicked); }
-        if (skipButton != null) { skipButton.onClick.RemoveAllListeners(); skipButton.onClick.AddListener(OnSkipClicked); }
     }
 
-    private void SetButtonsActive(bool active)
-    {
-        if (nextButton != null) nextButton.gameObject.SetActive(active);
-        if (prevButton != null) prevButton.gameObject.SetActive(active);
-
-        if (skipButton != null)
-        {
-            if (currentState == GameState.Decision)
-                skipButton.gameObject.SetActive(false);
-            else
-                skipButton.gameObject.SetActive(true);
-        }
-
-        if (spareButton != null) spareButton.gameObject.SetActive(false);
-        if (killButton != null) killButton.gameObject.SetActive(false);
-    }
 
     private void UpdateButtonStates(CharacterData data)
     {
@@ -469,6 +692,7 @@ public class GameManager : MonoBehaviour
         if (nextButton != null) nextButton.interactable = interactable;
         if (prevButton != null) prevButton.interactable = interactable;
     }
+
 
     public void NextPhoto()
     {
@@ -478,6 +702,7 @@ public class GameManager : MonoBehaviour
         photoDisplay.sprite = data.storyImages[currentPhotoIndex];
     }
 
+
     public void PrevPhoto()
     {
         if (currentState != GameState.Photos) return;
@@ -486,21 +711,18 @@ public class GameManager : MonoBehaviour
         photoDisplay.sprite = data.storyImages[currentPhotoIndex];
     }
 
+
     private void UpdateCounterDisplay()
     {
         if (counterText != null)
         {
-            // Fetch the saved totals for both Humans and AI
             int totalHumans = PlayerPrefs.GetInt("FinalHumansSpared", 0);
             int totalAI = PlayerPrefs.GetInt("FinalAiSpared", 0);
-
-            // Calculate the combined total team count
             int combinedTotal = totalHumans + totalAI;
-
-            // Update the UI text
             counterText.text = $"Team: {combinedTotal}";
         }
     }
+
 
     IEnumerator FadeEffect(float target)
     {
@@ -517,12 +739,13 @@ public class GameManager : MonoBehaviour
         if (target == 0) fadeImage.gameObject.SetActive(false);
     }
 
+
     void TransitionToEndScene()
     {
-        // Safety save before final transition
         PlayerPrefs.Save();
         StartCoroutine(FadeAndLoadScene(nextSceneName));
     }
+
 
     IEnumerator FadeAndLoadScene(string sceneName)
     {
