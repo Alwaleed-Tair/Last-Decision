@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f385b289e3ea8f47b2da39a026bc134, type: 3}
   m_Name: THE STUDENT
   m_EditorClassIdentifier: 
-  characterName: THE STUDENT
+  characterName: Ideal
   type: 0
-  backgroundImage: {fileID: 5251809639266272723, guid: 4e9cac05a9791144abdb79fb21654873, type: 3}
+  doorID: 0
+  backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   dialogueText: "Please be quickI can\u2019t waste time. \nPerfection demands everything."
   characterSprite: {fileID: 2173021818988101227, guid: 32564444df519e04ea5abbfa66cc59de, type: 3}
   spawnPosition: {x: 0, y: 60}
@@ -32,3 +33,13 @@ MonoBehaviour:
   stage3Scale: 0.45
   stage2DialogueText: "Fueled by caffeine and fear\nI push on\nconvinced I\u2019m
     just a failure waiting to be exposed."
+  spareModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0
+  killModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0
