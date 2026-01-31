@@ -4,6 +4,10 @@ using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// GameManager - نسخة CanvasGroup Fade
+/// استخدم هذي إذا الـ Image.color ما اشتغل
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     // ========================================================================
@@ -23,6 +27,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public UnityEngine.UI.Image backgroundDisplay;
     public UnityEngine.UI.Image characterDisplay;
+    public GameObject textBar;
 
     [Header("Navigation Buttons")]
     public Button nextButton;
@@ -36,6 +41,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Counter UI")]
     public TextMeshProUGUI counterText;
+
+    [Header("Object Container")]
+    public Transform objectContainer;
     #endregion
 
     #region Settings & Audio Variables
@@ -60,14 +68,12 @@ public class GameManager : MonoBehaviour
 
     #region Game Data Variables
     [Header("Game Data")]
-    public CharacterData[] allCharacters;
-    private int currentCharacterIndex = 0;
+    private CharacterData currentCharacter;
     private int currentPhotoIndex = 0;
 
     private int visibleTeamCount = 0;
     private int hiddenHumanCount = 0;
 
-    // Timer & Skip Variables
     private float photoTimerDuration = 6f;
     private float photoTimer = 0f;
     private bool isPhotoTimerActive = false;
@@ -75,6 +81,13 @@ public class GameManager : MonoBehaviour
     private bool skipRequested = false;
 
     private bool suddenSoundPlayed = false;
+
+    private GameObject currentSpawnedObject;
+    
+    private Coroutine currentTypewriterCoroutine;
+    
+    // ⭐ CanvasGroup للـ Fade (بديل للـ Image.color)
+    private CanvasGroup fadeCanvasGroup;
     #endregion
 
     // ========================================================================
@@ -83,18 +96,48 @@ public class GameManager : MonoBehaviour
     #region Unity Lifecycle
     private void Start()
     {
+        // 🔧 Setup Fade - باستخدام CanvasGroup
+        if (fadeImage == null)
+        {
+            Debug.LogError("❌ FADE IMAGE IS NULL! Assign it in Inspector!");
+            return;
+        }
+
+        // إضافة أو الحصول على CanvasGroup
+        fadeCanvasGroup = fadeImage.GetComponent<CanvasGroup>();
+        if (fadeCanvasGroup == null)
+        {
+            fadeCanvasGroup = fadeImage.gameObject.AddComponent<CanvasGroup>();
+            Debug.Log("✅ Added CanvasGroup to FadeImage");
+        }
+        
+        // ⭐ Setup أولي
+        fadeImage.gameObject.SetActive(true);
+        fadeImage.color = Color.black; // اللون أسود
+        fadeCanvasGroup.alpha = 1f; // Alpha كامل (شاشة سوداء)
+        fadeCanvasGroup.blocksRaycasts = true;
+        fadeCanvasGroup.interactable = false;
+        
+        Debug.Log("✅ GameManager Started - Screen is BLACK (CanvasGroup)");
+        Debug.Log($"   FadeImage: {fadeImage.name}");
+        Debug.Log($"   CanvasGroup Alpha: {fadeCanvasGroup.alpha}");
+
         InitializeAudio();
         SetupButtons();
-
         SetButtonsActive(false);
-        if (decisionPanel != null) decisionPanel.SetActive(false);
-
+        
+        if (decisionPanel != null) 
+            decisionPanel.SetActive(false);
+        
         UpdateCounterDisplay();
-        SetState(GameState.Dialogue);
+        
+        // ⭐ Fade In إلى غرفة الأبواب
+        StartCoroutine(InitialFadeIn());
     }
 
     private void Update()
     {
+        // ⏱️ Photo Timer
         if (isPhotoTimerActive && currentState == GameState.Photos)
         {
             photoTimer -= Time.deltaTime;
@@ -105,19 +148,68 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    IEnumerator InitialFadeIn()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("🎬 Initial Fade In - Revealing Door Room");
+        yield return StartCoroutine(FadeToAlpha(0f));
+    }
+    #endregion
+
+    // ========================================================================
+    //                         CHARACTER SEQUENCE CONTROL
+    // ========================================================================
+    #region Character Sequence Control
+    
+    public void StartCharacterSequence(CharacterData character)
+    {
+        if (character == null)
+        {
+            Debug.LogError("❌ Character is NULL!");
+            return;
+        }
+        
+        currentCharacter = character;
+        currentPhotoIndex = 0;
+        suddenSoundPlayed = false;
+        
+        Debug.Log($"🎭 Starting Character: {character.name}");
+        
+        StartCoroutine(StartCharacterWithFade());
+    }
+
+    IEnumerator StartCharacterWithFade()
+    {
+        Debug.Log("🎬 Fade Out - Transitioning to Character");
+        yield return StartCoroutine(FadeToAlpha(1f));
+        yield return new WaitForSeconds(0.3f);
+        
+        SetState(GameState.Dialogue);
+    }
+    
     #endregion
 
     // ========================================================================
     //                                STATE MACHINE
     // ========================================================================
     #region State Management
+    
     public void SetState(GameState newState)
     {
         currentState = newState;
-        StopAllCoroutines();
+        
+        if (currentTypewriterCoroutine != null)
+        {
+            StopCoroutine(currentTypewriterCoroutine);
+            currentTypewriterCoroutine = null;
+        }
+        
         isPhotoTimerActive = false;
         isTyping = false;
         skipRequested = false;
+
+        Debug.Log($"🔄 State Changed: {newState}");
 
         switch (currentState)
         {
@@ -142,33 +234,43 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    #region Coroutines
+    // ========================================================================
+    //                           STATE HANDLERS (3 STAGES)
+    // ========================================================================
+    #region State Handlers
+    
     IEnumerator HandleDialogueState()
     {
-        if (allCharacters == null || allCharacters.Length == 0) yield break;
-        if (currentCharacterIndex >= allCharacters.Length) yield break;
+        if (currentCharacter == null) yield break;
 
-        CharacterData data = allCharacters[currentCharacterIndex];
+        Debug.Log("📝 Stage 1: Dialogue Started");
 
         imageFrame.SetActive(false);
-        if (data.backgroundImage != null) backgroundDisplay.sprite = data.backgroundImage;
+        
+        if (textBar != null) 
+            textBar.SetActive(true);
+        
+        if (currentCharacter.backgroundImage != null) 
+            backgroundDisplay.sprite = currentCharacter.backgroundImage;
 
-        if (data.characterSprite != null && characterDisplay != null)
+        if (currentCharacter.characterSprite != null && characterDisplay != null)
         {
-            characterDisplay.sprite = data.characterSprite;
+            characterDisplay.sprite = currentCharacter.characterSprite;
             RectTransform charRT = characterDisplay.GetComponent<RectTransform>();
             if (charRT != null)
             {
-                charRT.anchoredPosition = data.spawnPosition;
-                charRT.localScale = Vector3.one * data.characterScale;
+                charRT.anchoredPosition = currentCharacter.spawnPosition;
+                charRT.localScale = Vector3.one * currentCharacter.characterScale;
             }
             characterDisplay.gameObject.SetActive(true);
         }
 
-        yield return StartCoroutine(FadeEffect(0f));
-        yield return StartCoroutine(TypewriterEffect(data.dialogueText));
+        Debug.Log("🎬 Fade In - Stage 1");
+        yield return StartCoroutine(FadeToAlpha(0f));
+        
+        currentTypewriterCoroutine = StartCoroutine(TypewriterEffect(currentCharacter.dialogueText));
+        yield return currentTypewriterCoroutine;
 
-        // Skipable wait after typing - logic remains but won't trigger if skipRequested was just used
         float waitTimer = 2f;
         while (waitTimer > 0 && !skipRequested)
         {
@@ -182,22 +284,29 @@ public class GameManager : MonoBehaviour
 
     IEnumerator HandlePhotosState()
     {
-        if (allCharacters == null || allCharacters.Length == 0) yield break;
-        CharacterData data = allCharacters[currentCharacterIndex];
+        if (currentCharacter == null) yield break;
 
-        yield return StartCoroutine(FadeEffect(1f));
+        Debug.Log("📸 Stage 2: Photos Started");
+
+        Debug.Log("🎬 Fade Out - Before Stage 2");
+        yield return StartCoroutine(FadeToAlpha(1f));
         yield return new WaitForSeconds(0.5f);
 
         dialogueText.text = "";
-        if (data.stage2Background != null) backgroundDisplay.sprite = data.stage2Background;
+        
+        if (textBar != null) 
+            textBar.SetActive(true);
+        
+        if (currentCharacter.stage2Background != null) 
+            backgroundDisplay.sprite = currentCharacter.stage2Background;
 
         if (characterDisplay != null)
         {
             RectTransform charRT = characterDisplay.GetComponent<RectTransform>();
             if (charRT != null)
             {
-                charRT.anchoredPosition = data.stage2Position;
-                charRT.localScale = Vector3.one * data.stage2Scale;
+                charRT.anchoredPosition = currentCharacter.stage2Position;
+                charRT.localScale = Vector3.one * currentCharacter.stage2Scale;
             }
         }
 
@@ -205,28 +314,39 @@ public class GameManager : MonoBehaviour
         RectTransform frameRT = imageFrame.GetComponent<RectTransform>();
         if (frameRT != null)
         {
-            frameRT.anchoredPosition = data.framePosition;
-            frameRT.localScale = Vector3.one * data.frameScale;
+            frameRT.anchoredPosition = currentCharacter.framePosition;
+            frameRT.localScale = Vector3.one * currentCharacter.frameScale;
         }
 
         currentPhotoIndex = 0;
-        if (data.storyImages != null && data.storyImages.Length > 0)
+        if (currentCharacter.storyImages != null && currentCharacter.storyImages.Length > 0)
         {
-            photoDisplay.sprite = data.storyImages[0];
-            UpdateButtonStates(data);
+            photoDisplay.sprite = currentCharacter.storyImages[0];
+            UpdateButtonStates(currentCharacter);
         }
 
         yield return new WaitForSeconds(0.5f);
-        yield return StartCoroutine(FadeEffect(0f));
+        
+        Debug.Log("🎬 Fade In - Stage 2");
+        yield return StartCoroutine(FadeToAlpha(0f));
 
         float waitBefore = 1f;
-        while (waitBefore > 0 && !skipRequested) { waitBefore -= Time.deltaTime; yield return null; }
+        while (waitBefore > 0 && !skipRequested) 
+        { 
+            waitBefore -= Time.deltaTime; 
+            yield return null; 
+        }
         skipRequested = false;
 
-        yield return StartCoroutine(TypewriterEffect(data.stage2DialogueText));
+        currentTypewriterCoroutine = StartCoroutine(TypewriterEffect(currentCharacter.stage2DialogueText));
+        yield return currentTypewriterCoroutine;
 
         float waitAfter = 1f;
-        while (waitAfter > 0 && !skipRequested) { waitAfter -= Time.deltaTime; yield return null; }
+        while (waitAfter > 0 && !skipRequested) 
+        { 
+            waitAfter -= Time.deltaTime; 
+            yield return null; 
+        }
         skipRequested = false;
 
         if (!suddenSoundPlayed && UnityEngine.Random.value > 0.5f)
@@ -238,68 +358,75 @@ public class GameManager : MonoBehaviour
         photoTimer = photoTimerDuration;
         isPhotoTimerActive = true;
 
+        Debug.Log($"⏱️ Photo Timer Started: {photoTimerDuration}s");
+
         while (isPhotoTimerActive && currentState == GameState.Photos)
         {
             yield return null;
         }
+        
+        Debug.Log("⏱️ Photo Timer Finished");
     }
 
     IEnumerator HandleDecisionState()
     {
-        yield return StartCoroutine(FadeEffect(1f));
+        Debug.Log("⚖️ Stage 3: Decision Started");
+
+        Debug.Log("🎬 Fade Out - Before Stage 3");
+        yield return StartCoroutine(FadeToAlpha(1f));
         yield return new WaitForSeconds(0.3f);
 
         imageFrame.SetActive(false);
-        CharacterData data = allCharacters[currentCharacterIndex];
+        
+        if (textBar != null) 
+            textBar.SetActive(false);
 
-        if (data.stage3Background != null) backgroundDisplay.sprite = data.stage3Background;
+        if (currentCharacter.stage3Background != null) 
+            backgroundDisplay.sprite = currentCharacter.stage3Background;
 
         if (characterDisplay != null)
         {
             RectTransform charRT = characterDisplay.GetComponent<RectTransform>();
             if (charRT != null)
             {
-                charRT.anchoredPosition = data.stage3Position;
-                charRT.localScale = Vector3.one * data.stage3Scale;
+                charRT.anchoredPosition = currentCharacter.stage3Position;
+                charRT.localScale = Vector3.one * currentCharacter.stage3Scale;
             }
         }
 
         dialogueText.text = "";
-        if (decisionPanel != null) decisionPanel.SetActive(true);
-        if (spareButton != null) spareButton.gameObject.SetActive(true);
-        if (killButton != null) killButton.gameObject.SetActive(true);
+        
+        if (decisionPanel != null) 
+            decisionPanel.SetActive(true);
+        if (spareButton != null) 
+            spareButton.gameObject.SetActive(true);
+        if (killButton != null) 
+            killButton.gameObject.SetActive(true);
 
-        yield return StartCoroutine(FadeEffect(0f));
+        Debug.Log("🎬 Fade In - Stage 3");
+        yield return StartCoroutine(FadeToAlpha(0f));
+        
+        Debug.Log("⚖️ Waiting for player decision...");
     }
-
-
-    IEnumerator FadeAndChangeCharacter()
-    {
-        yield return StartCoroutine(FadeEffect(1f));
-        yield return new WaitForSeconds(0.3f);
-        SetState(GameState.Dialogue);
-    }
+    
     #endregion
 
     // ========================================================================
     //                                INPUT HANDLING
     // ========================================================================
     #region Input Handling
+    
     private void OnSkipClicked()
     {
         PlayButtonClickSound();
 
-        // 1. Check if we are currently typing.
         if (isTyping)
         {
-            // NEW: Only allow skipping if at least one character has been typed
-            // This prevents skipping the whole block if the user double-clicks the transition button
             if (dialogueText.text.Length > 0)
             {
                 skipRequested = true;
             }
         }
-        // 2. If NOT typing and text is finished, move to next phase.
         else
         {
             AdvanceGameState();
@@ -310,14 +437,9 @@ public class GameManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(text)) yield break;
 
-        // Reset state
         isTyping = true;
         skipRequested = false;
         dialogueText.text = "";
-
-        // OPTIONAL: Add a tiny delay (0.1s) here if you want to be 100% sure 
-        // a click from a previous screen doesn't carry over.
-        // yield return new WaitForSeconds(0.1f);
 
         foreach (char c in text)
         {
@@ -329,8 +451,6 @@ public class GameManager : MonoBehaviour
 
             if (c == '\n')
             {
-                // Note: Clearing text on newline might make old text disappear. 
-                // Usually, you'd want: dialogueText.text += c;
                 dialogueText.text = "";
             }
             else
@@ -342,63 +462,182 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(typewriterSpeed);
         }
 
-        // Wait for a tiny bit so a "finish typing" click doesn't 
-        // immediately trigger "AdvanceGameState" in the same frame
         isTyping = false;
         yield return new WaitForSeconds(0.2f);
         skipRequested = false;
+        currentTypewriterCoroutine = null;
     }
 
     private void AdvanceGameState()
     {
-        // Safety: Do not skip to next state if the typewriter is still working 
-        // (This prevents the "double jump" if clicking very fast)
         if (isTyping) return;
 
-        StopAllCoroutines();
+        if (currentTypewriterCoroutine != null)
+        {
+            StopCoroutine(currentTypewriterCoroutine);
+            currentTypewriterCoroutine = null;
+        }
+        
         isTyping = false;
         skipRequested = false;
 
-        if (currentState == GameState.Dialogue) SetState(GameState.Photos);
-        else if (currentState == GameState.Photos) SetState(GameState.Decision);
+        if (currentState == GameState.Dialogue) 
+            SetState(GameState.Photos);
+        else if (currentState == GameState.Photos) 
+            SetState(GameState.Decision);
     }
 
-    private void OnNextPhotoClicked() { PlayButtonClickSound(); NextPhoto(); }
-    private void OnPrevPhotoClicked() { PlayButtonClickSound(); PrevPhoto(); }
-    private void OnSpareButtonClicked() { PlayButtonClickSound(); OnSparePressed(); }
-    private void OnKillButtonClicked() { PlayButtonClickSound(); OnKillPressed(); }
+    private void OnNextPhotoClicked() 
+    { 
+        PlayButtonClickSound(); 
+        NextPhoto(); 
+    }
+    
+    private void OnPrevPhotoClicked() 
+    { 
+        PlayButtonClickSound(); 
+        PrevPhoto(); 
+    }
+
+    private void OnSpareButtonClicked() 
+    { 
+        PlayButtonClickSound(); 
+        OnSparePressed(); 
+    }
+    
+    private void OnKillButtonClicked() 
+    { 
+        PlayButtonClickSound(); 
+        OnKillPressed(); 
+    }
 
     public void OnSparePressed()
     {
-        if (currentState != GameState.Decision) return;
-        CharacterData data = allCharacters[currentCharacterIndex];
+        if (currentState != GameState.Decision || currentCharacter == null) 
+            return;
+        
+        Debug.Log($"💚 SPARE Decision - Character: {currentCharacter.name}");
+        
         visibleTeamCount++;
         UpdateCounterDisplay();
-        if (data.type == CharacterData.CharacterType.Human) hiddenHumanCount++;
-        NextCharacter();
+        
+        if (currentCharacter.type == CharacterData.CharacterType.Human) 
+            hiddenHumanCount++;
+
+        SpawnDecisionObject(currentCharacter.spareModification);
+
+        if (DoorSystemManager.Instance != null)
+        {
+            DoorSystemManager.Instance.OnCharacterDecisionMade(currentCharacter, true);
+        }
+
+        StartCoroutine(FadeOutAndReturn());
     }
 
     public void OnKillPressed()
     {
-        if (currentState != GameState.Decision) return;
-        NextCharacter();
+        if (currentState != GameState.Decision || currentCharacter == null) 
+            return;
+
+        Debug.Log($"💔 KILL Decision - Character: {currentCharacter.name}");
+
+        SpawnDecisionObject(currentCharacter.killModification);
+
+        if (DoorSystemManager.Instance != null)
+        {
+            DoorSystemManager.Instance.OnCharacterDecisionMade(currentCharacter, false);
+        }
+
+        StartCoroutine(FadeOutAndReturn());
     }
+
+    IEnumerator FadeOutAndReturn()
+    {
+        Debug.Log("🎬 Fade Out - Returning to Door Room");
+        yield return StartCoroutine(FadeToAlpha(1f));
+        yield return new WaitForSeconds(0.3f);
+        
+        currentCharacter = null;
+        
+        Debug.Log("✅ Returned to Door Room (waiting for DoorSystemManager to Fade In)");
+    }
+    
+    #endregion
+
+    // ========================================================================
+    //                            OBJECT SPAWNING
+    // ========================================================================
+    #region Object Spawning
+    
+    private void SpawnDecisionObject(ObjectModification modification)
+    {
+        if (modification == null || modification.imageToAdd == null) 
+            return;
+
+        if (currentSpawnedObject != null)
+        {
+            Destroy(currentSpawnedObject);
+        }
+
+        Transform parent = objectContainer != null ? objectContainer : backgroundDisplay.transform;
+        
+        currentSpawnedObject = Instantiate(modification.imageToAdd, parent);
+
+        RectTransform rt = currentSpawnedObject.GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            rt.anchoredPosition = modification.positionOnBackground;
+            rt.localScale = Vector3.one * modification.scale;
+        }
+
+        Canvas canvas = currentSpawnedObject.GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.sortingOrder = modification.sortingOrder;
+        }
+        else
+        {
+            canvas = currentSpawnedObject.AddComponent<Canvas>();
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = modification.sortingOrder;
+        }
+        
+        Debug.Log($"🎨 Spawned Object: {modification.imageToAdd.name}");
+    }
+
+    private void ClearSpawnedObjects()
+    {
+        if (currentSpawnedObject != null)
+        {
+            Destroy(currentSpawnedObject);
+            currentSpawnedObject = null;
+        }
+    }
+    
     #endregion
 
     // ========================================================================
     //                                HELPERS
     // ========================================================================
     #region Helpers & UI
+    
     private void InitializeAudio()
     {
-        if (backgroundMusicSource != null)
+        if (backgroundMusicSource != null && backgroundMusicSource.enabled)
         {
             backgroundMusicSource.volume = musicVolume * masterVolume;
-            if (!backgroundMusicSource.isPlaying) backgroundMusicSource.Play();
+            if (!backgroundMusicSource.isPlaying) 
+                backgroundMusicSource.Play();
         }
-        if (typewriterSoundSource != null) typewriterSoundSource.volume = sfxVolume * masterVolume;
-        if (buttonClickSoundSource != null) buttonClickSoundSource.volume = sfxVolume * masterVolume;
-        if (suddenSoundSource != null) suddenSoundSource.volume = sfxVolume * masterVolume;
+        
+        if (typewriterSoundSource != null) 
+            typewriterSoundSource.volume = sfxVolume * masterVolume;
+        
+        if (buttonClickSoundSource != null) 
+            buttonClickSoundSource.volume = sfxVolume * masterVolume;
+        
+        if (suddenSoundSource != null) 
+            suddenSoundSource.volume = sfxVolume * masterVolume;
     }
 
     private void PlayTypewriterSound()
@@ -421,19 +660,45 @@ public class GameManager : MonoBehaviour
 
     private void SetupButtons()
     {
-        if (nextButton != null) { nextButton.onClick.RemoveAllListeners(); nextButton.onClick.AddListener(OnNextPhotoClicked); }
-        if (prevButton != null) { prevButton.onClick.RemoveAllListeners(); prevButton.onClick.AddListener(OnPrevPhotoClicked); }
-        if (spareButton != null) { spareButton.onClick.RemoveAllListeners(); spareButton.onClick.AddListener(OnSpareButtonClicked); }
-        if (killButton != null) { killButton.onClick.RemoveAllListeners(); killButton.onClick.AddListener(OnKillButtonClicked); }
-        if (skipButton != null) { skipButton.onClick.RemoveAllListeners(); skipButton.onClick.AddListener(OnSkipClicked); }
+        if (nextButton != null) 
+        { 
+            nextButton.onClick.RemoveAllListeners(); 
+            nextButton.onClick.AddListener(OnNextPhotoClicked); 
+        }
+        
+        if (prevButton != null) 
+        { 
+            prevButton.onClick.RemoveAllListeners(); 
+            prevButton.onClick.AddListener(OnPrevPhotoClicked); 
+        }
+        
+        if (spareButton != null) 
+        { 
+            spareButton.onClick.RemoveAllListeners(); 
+            spareButton.onClick.AddListener(OnSpareButtonClicked); 
+        }
+        
+        if (killButton != null) 
+        { 
+            killButton.onClick.RemoveAllListeners(); 
+            killButton.onClick.AddListener(OnKillButtonClicked); 
+        }
+        
+        if (skipButton != null) 
+        { 
+            skipButton.onClick.RemoveAllListeners(); 
+            skipButton.onClick.AddListener(OnSkipClicked); 
+        }
     }
 
     private void SetButtonsActive(bool active)
     {
-        if (nextButton != null) nextButton.gameObject.SetActive(active);
-        if (prevButton != null) prevButton.gameObject.SetActive(active);
+        if (nextButton != null) 
+            nextButton.gameObject.SetActive(active);
+        
+        if (prevButton != null) 
+            prevButton.gameObject.SetActive(active);
 
-        // ⭐ Hide skipButton if we are in Decision state, regardless of 'active' param
         if (skipButton != null)
         {
             if (currentState == GameState.Decision)
@@ -442,72 +707,146 @@ public class GameManager : MonoBehaviour
                 skipButton.gameObject.SetActive(true);
         }
 
-        if (spareButton != null) spareButton.gameObject.SetActive(false);
-        if (killButton != null) killButton.gameObject.SetActive(false);
+        if (spareButton != null) 
+            spareButton.gameObject.SetActive(false);
+        
+        if (killButton != null) 
+            killButton.gameObject.SetActive(false);
     }
 
     private void UpdateButtonStates(CharacterData data)
     {
         bool interactable = (data.storyImages != null && data.storyImages.Length > 0);
-        if (nextButton != null) nextButton.interactable = interactable;
-        if (prevButton != null) prevButton.interactable = interactable;
+        
+        if (nextButton != null) 
+            nextButton.interactable = interactable;
+        
+        if (prevButton != null) 
+            prevButton.interactable = interactable;
     }
 
     public void NextPhoto()
     {
-        if (currentState != GameState.Photos) return;
-        CharacterData data = allCharacters[currentCharacterIndex];
-        currentPhotoIndex = (currentPhotoIndex + 1) % data.storyImages.Length;
-        photoDisplay.sprite = data.storyImages[currentPhotoIndex];
+        if (currentState != GameState.Photos || currentCharacter == null) 
+            return;
+        
+        currentPhotoIndex = (currentPhotoIndex + 1) % currentCharacter.storyImages.Length;
+        photoDisplay.sprite = currentCharacter.storyImages[currentPhotoIndex];
+        
+        Debug.Log($"📸 Next Photo: {currentPhotoIndex + 1}/{currentCharacter.storyImages.Length}");
     }
 
     public void PrevPhoto()
     {
-        if (currentState != GameState.Photos) return;
-        CharacterData data = allCharacters[currentCharacterIndex];
-        currentPhotoIndex = (currentPhotoIndex - 1 + data.storyImages.Length) % data.storyImages.Length;
-        photoDisplay.sprite = data.storyImages[currentPhotoIndex];
+        if (currentState != GameState.Photos || currentCharacter == null) 
+            return;
+        
+        currentPhotoIndex = (currentPhotoIndex - 1 + currentCharacter.storyImages.Length) % currentCharacter.storyImages.Length;
+        photoDisplay.sprite = currentCharacter.storyImages[currentPhotoIndex];
+        
+        Debug.Log($"📸 Previous Photo: {currentPhotoIndex + 1}/{currentCharacter.storyImages.Length}");
     }
 
     private void UpdateCounterDisplay()
     {
-        if (counterText != null) counterText.text = $"Team : {visibleTeamCount}";
+        if (counterText != null) 
+            counterText.text = $"Team : {visibleTeamCount}";
     }
 
-    IEnumerator FadeEffect(float target)
+    #endregion
+
+    // ========================================================================
+    //                            FADE SYSTEM - CanvasGroup
+    // ========================================================================
+    #region Fade System
+    
+    /// <summary>
+    /// تأثير Fade باستخدام CanvasGroup.alpha
+    /// أسرع وأكثر استقراراً من Image.color
+    /// targetAlpha = 0 → شفاف (Fade In)
+    /// targetAlpha = 1 → أسود (Fade Out)
+    /// </summary>
+    IEnumerator FadeToAlpha(float targetAlpha)
     {
-        fadeImage.gameObject.SetActive(true);
-        float start = fadeImage.color.a;
-        float t = 0;
-        while (t < 1)
+        if (fadeCanvasGroup == null)
         {
-            t += Time.deltaTime * fadeSpeed;
-            fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(start, target, t));
+            Debug.LogError("❌ CanvasGroup is NULL!");
+            yield break;
+        }
+
+        string direction = targetAlpha == 1f ? "OUT (to BLACK)" : "IN (to CLEAR)";
+        Debug.Log($"🎬 FADE {direction} Started");
+        Debug.Log($"   Current Alpha: {fadeCanvasGroup.alpha} → Target: {targetAlpha}");
+
+        // تأكد من تفعيل الـ GameObject
+        fadeImage.gameObject.SetActive(true);
+        fadeCanvasGroup.blocksRaycasts = true; // منع التفاعل
+        fadeCanvasGroup.interactable = false;
+        
+        float startAlpha = fadeCanvasGroup.alpha;
+        float elapsed = 0f;
+        float duration = 1f / fadeSpeed;
+
+        Debug.Log($"   Duration: {duration}s");
+
+        // Loop التدرج
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            fadeCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            
+            // طباعة كل 10 فريمات
+            if (Time.frameCount % 10 == 0)
+            {
+                Debug.Log($"   Progress: {t:F2} | Alpha: {fadeCanvasGroup.alpha:F3}");
+            }
+            
             yield return null;
         }
-        fadeImage.color = new Color(0, 0, 0, target);
-        if (target == 0) fadeImage.gameObject.SetActive(false);
+
+        // التأكد من القيمة النهائية
+        fadeCanvasGroup.alpha = targetAlpha;
+        fadeCanvasGroup.blocksRaycasts = false; // السماح بالتفاعل
+        
+        Debug.Log($"✅ FADE {direction} Complete | Final Alpha: {fadeCanvasGroup.alpha}");
+
+        // إيقاف GameObject إذا وصلنا للشفاف الكامل
+        if (targetAlpha == 0f)
+        {
+            fadeImage.gameObject.SetActive(false);
+            Debug.Log("   FadeImage GameObject disabled");
+        }
     }
 
-    void NextCharacter()
-    {
-        currentCharacterIndex++;
-        if (currentCharacterIndex < allCharacters.Length) StartCoroutine(FadeAndChangeCharacter());
-        else TransitionToEndScene();
-    }
+    #endregion
 
-    void TransitionToEndScene()
+    // ========================================================================
+    //                            END GAME
+    // ========================================================================
+    #region End Game
+    
+    public void TransitionToEndScene()
     {
+        Debug.Log("🏁 Transitioning to End Scene");
+        Debug.Log($"   Humans Spared: {hiddenHumanCount}");
+        Debug.Log($"   AI Spared: {visibleTeamCount - hiddenHumanCount}");
+        
         PlayerPrefs.SetInt("FinalHumansSpared", hiddenHumanCount);
         PlayerPrefs.SetInt("FinalAiSpared", visibleTeamCount - hiddenHumanCount);
         PlayerPrefs.Save();
+        
         StartCoroutine(FadeAndLoadScene(nextSceneName));
     }
 
     IEnumerator FadeAndLoadScene(string sceneName)
     {
-        yield return StartCoroutine(FadeEffect(1f));
+        yield return StartCoroutine(FadeToAlpha(1f));
+        yield return new WaitForSeconds(0.5f);
+        
+        Debug.Log($"🔄 Loading Scene: {sceneName}");
         SceneManager.LoadScene(sceneName);
     }
+    
     #endregion
 }
