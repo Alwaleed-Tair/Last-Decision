@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class DoorsSticker : MonoBehaviour
 {
+
     [Header("Sprites")]
     public Sprite spareSprite;
     public Sprite killSprite;
@@ -15,23 +16,22 @@ public class DoorsSticker : MonoBehaviour
     public UnityEngine.UI.Image angerSticker;
     public UnityEngine.UI.Image joySticker;
 
-    void Starrt()
+    void Start()
     {
-        // Check every door status  when the scene loads
-        UpdateDooor("Ideal", idealSticker);
-        UpdateDooor("Control", controlSticker);
-        UpdateDooor("Pride", prideSticker);
-        UpdateDooor("Fear", fearSticker);
-        UpdateDooor("Anger", angerSticker);
-        UpdateDooor("Joy", joySticker);
+        // Update every door when the Hub scene loads
+        UpdateDoor("Ideal", idealSticker);
+        UpdateDoor("Control", controlSticker);
+        UpdateDoor("Pride", prideSticker);
+        UpdateDoor("Fear", fearSticker);
+        UpdateDoor("Anger", angerSticker);
+        UpdateDoor("Joy", joySticker);
     }
 
-    void UpdateDooor(string doorKey, UnityEngine.UI.Image stickerImage)
+    void UpdateDoor(string doorKey, UnityEngine.UI.Image stickerImage)
     {
-        // Safety check to ensure the object is assigned in the Inspector
         if (stickerImage == null) return;
 
-        // Get the decision: 1 for Spare, 0 for Kill, -1 for Not Done
+        // Fetch the decision saved from the Gameplay scene
         int decision = PlayerPrefs.GetInt("Decision_" + doorKey, -1);
 
         if (decision == -1)

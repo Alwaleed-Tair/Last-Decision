@@ -215,7 +215,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &167085307
 RectTransform:
   m_ObjectHideFlags: 0
@@ -232,8 +232,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000017166, y: -0.000010967}
-  m_SizeDelta: {x: 58.821, y: 104.24}
+  m_AnchoredPosition: {x: -0.00057211, y: -1}
+  m_SizeDelta: {x: 141.71, y: 266.282}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &167085308
 MonoBehaviour:
@@ -307,8 +307,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0001049, y: -2.123}
-  m_SizeDelta: {x: 58.821, y: 104.24}
+  m_AnchoredPosition: {x: 0.00018384, y: 1.123}
+  m_SizeDelta: {x: 134, y: 290.289}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &545981101
 MonoBehaviour:
@@ -396,10 +396,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -493,8 +493,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -228, y: 46}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: -563.6744, y: 101.04}
+  m_SizeDelta: {x: 139.782, y: 247.49}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &681395786
 MonoBehaviour:
@@ -559,13 +559,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 681395784}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -603,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Control
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1 &819866547
 GameObject:
   m_ObjectHideFlags: 0
@@ -638,8 +638,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -2.1234}
-  m_SizeDelta: {x: 58.821, y: 104.24}
+  m_AnchoredPosition: {x: -4.7832, y: 5.7675}
+  m_SizeDelta: {x: 151.28, y: 260.74}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &819866549
 MonoBehaviour:
@@ -713,8 +713,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00024223, y: -4.8829}
-  m_SizeDelta: {x: 58.82, y: 109.7659}
+  m_AnchoredPosition: {x: 0.000089618, y: -2.883}
+  m_SizeDelta: {x: 123.19, y: 277.811}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1003057459
 MonoBehaviour:
@@ -791,8 +791,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -104, y: 46}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: -251.59, y: 106.72}
+  m_SizeDelta: {x: 134, y: 258.85}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1227548784
 MonoBehaviour:
@@ -857,13 +857,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1227548782}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -901,7 +901,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Pride
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1 &1285329713
 GameObject:
   m_ObjectHideFlags: 0
@@ -1028,8 +1028,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00026131, y: -2.1226}
-  m_SizeDelta: {x: 58.82, y: 104.24}
+  m_AnchoredPosition: {x: -0.00046415, y: -1.122}
+  m_SizeDelta: {x: 144.41, y: 278.286}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1313977458
 MonoBehaviour:
@@ -1106,8 +1106,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 342, y: 46}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: 849.446, y: 101.901}
+  m_SizeDelta: {x: 141.715, y: 249.208}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1322024994
 MonoBehaviour:
@@ -1172,13 +1172,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1322024992}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1216,7 +1216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Joy
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1 &1346074639
 GameObject:
   m_ObjectHideFlags: 0
@@ -1268,7 +1268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1363,7 +1363,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1694893519
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1381,8 +1381,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 215, y: 40}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: 534, y: 105.76}
+  m_SizeDelta: {x: 141.71, y: 241.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1694893520
 MonoBehaviour:
@@ -1447,13 +1447,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1694893518}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1491,7 +1491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Anger
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1 &2052295823
 GameObject:
   m_ObjectHideFlags: 0
@@ -1529,8 +1529,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 90, y: 40}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: 225, y: 101.9}
+  m_SizeDelta: {x: 144.41, y: 249.21}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2052295825
 MonoBehaviour:
@@ -1595,13 +1595,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2052295823}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1639,7 +1639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Fear
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1 &2057592470
 GameObject:
   m_ObjectHideFlags: 0
@@ -1674,8 +1674,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00024605, y: -4.8829}
-  m_SizeDelta: {x: 58.82, y: 109.7658}
+  m_AnchoredPosition: {x: 0.00061235, y: -2.883}
+  m_SizeDelta: {x: 139.78, y: 277.811}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2057592472
 MonoBehaviour:
@@ -1752,8 +1752,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -348, y: 40}
-  m_SizeDelta: {x: 58.821, y: 108.4868}
+  m_AnchoredPosition: {x: -866, y: 101.9}
+  m_SizeDelta: {x: 123.19, y: 249.22}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2103444577
 MonoBehaviour:
@@ -1818,13 +1818,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2103444575}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1862,12 +1862,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Ideal
-  gameSceneName: CharacterScene
+  gameSceneName: GamePlay
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1285329716}
-  - {fileID: 669152163}
-  - {fileID: 71754141}
   - {fileID: 1372815865}
+  - {fileID: 71754141}
+  - {fileID: 669152163}

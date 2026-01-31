@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f385b289e3ea8f47b2da39a026bc134, type: 3}
   m_Name: THE LISTENER
   m_EditorClassIdentifier: 
-  characterName: THE LISTENER (Boy with Headphones)
+  characterName: Joy
   type: 1
-  backgroundImage: {fileID: 5251809639266272723, guid: 4e9cac05a9791144abdb79fb21654873, type: 3}
+  doorID: 0
+  backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   dialogueText: "I turn the volume up to escape the silence\ncheck my memories and
     you\u2019ll understand."
   characterSprite: {fileID: 4908664854380146506, guid: 503c7802640309249af5b74a2b324df1, type: 3}
@@ -37,3 +38,13 @@ MonoBehaviour:
 
     hiding
     behind sound instead of being seen.'
+  spareModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0
+  killModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0

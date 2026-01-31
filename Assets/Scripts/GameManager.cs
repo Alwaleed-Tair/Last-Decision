@@ -1,16 +1,17 @@
-using UnityEngine;
+ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
+using static GameManager;
 
 public class GameManager : MonoBehaviour
 {
-    // ========================================================================
-    //                                DEFINITIONS & VARIABLES
-    // ========================================================================
-    #region Definitions & UI Variables
-    public enum GameState { Dialogue, Photos, Decision }
+    // ========================================================================
+    //                                DEFINITIONS & VARIABLES
+    // ========================================================================
+    #region Definitions & UI Variables
+    public enum GameState { Dialogue, Photos, Decision }
 
     [Header("Current State")]
     public GameState currentState;
@@ -23,6 +24,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public UnityEngine.UI.Image backgroundDisplay;
     public UnityEngine.UI.Image characterDisplay;
+    public GameObject textBar;
 
     [Header("Navigation Buttons")]
     public Button nextButton;
@@ -36,10 +38,10 @@ public class GameManager : MonoBehaviour
 
     [Header("Counter UI")]
     public TextMeshProUGUI counterText;
-    #endregion
+    #endregion
 
-    #region Settings & Audio Variables
-    [Header("Typewriter Settings")]
+    #region Settings & Audio Variables
+    [Header("Typewriter Settings")]
     public float typewriterSpeed = 0.12f;
 
     [Header("Audio Sources")]
@@ -56,10 +58,10 @@ public class GameManager : MonoBehaviour
 
     [Header("Scene Settings")]
     public string nextSceneName = "EndScene";
-    #endregion
+    #endregion
 
-    #region Game Data Variables
-    [Header("Game Data")]
+    #region Game Data Variables
+    [Header("Game Data")]
     public CharacterData[] allCharacters;
     private int currentCharacterIndex = 0;
     private int currentPhotoIndex = 0;
@@ -67,21 +69,21 @@ public class GameManager : MonoBehaviour
     private int visibleTeamCount = 0;
     private int hiddenHumanCount = 0;
 
-    // Timer & Skip Variables
-    private float photoTimerDuration = 6f;
+    // Timer & Skip Variables
+    private float photoTimerDuration = 6f;
     private float photoTimer = 0f;
     private bool isPhotoTimerActive = false;
     private bool isTyping = false;
     private bool skipRequested = false;
 
     private bool suddenSoundPlayed = false;
-    #endregion
+    #endregion
 
-    // ========================================================================
-    //                                UNITY LIFECYCLE
-    // ========================================================================
-    #region Unity Lifecycle
-    private void Start()
+    // ========================================================================
+    //                                UNITY LIFECYCLE
+    // ========================================================================
+    #region Unity Lifecycle
+    private void Start()
     {
         InitializeAudio();
         SetupButtons();
@@ -90,7 +92,21 @@ public class GameManager : MonoBehaviour
         if (decisionPanel != null) decisionPanel.SetActive(false);
 
         UpdateCounterDisplay();
-        SetState(GameState.Dialogue);
+
+        string selectedName = PlayerPrefs.GetString("SelectedCharacter", "");
+
+        // 2. Find the character in your library
+        for (int i = 0; i < allCharacters.Length; i++)
+        {
+            if (allCharacters[i].characterName == selectedName)
+            {
+                currentCharacterIndex = i; // Set the index for the sequence
+                break;
+            }
+        }
+
+        SetState(GameState.Dialogue); // Start the intro
+
     }
 
     private void Update()
@@ -108,7 +124,7 @@ public class GameManager : MonoBehaviour
     #endregion
 
     // ========================================================================
-    //                                STATE MACHINE
+    //                                STATE MACHINE
     // ========================================================================
     #region State Management
     public void SetState(GameState newState)
@@ -119,7 +135,6 @@ public class GameManager : MonoBehaviour
         isTyping = false;
         skipRequested = false;
 
-        // Hide skip button immediately until typewriter is ready
         if (skipButton != null) skipButton.gameObject.SetActive(false);
 
         switch (currentState)
@@ -127,12 +142,14 @@ public class GameManager : MonoBehaviour
             case GameState.Dialogue:
                 SetButtonsActive(false);
                 if (decisionPanel != null) decisionPanel.SetActive(false);
+                if (textBar != null) textBar.SetActive(true);   // ✅ SHOW
                 StartCoroutine(HandleDialogueState());
                 break;
 
             case GameState.Photos:
                 SetButtonsActive(true);
                 if (decisionPanel != null) decisionPanel.SetActive(false);
+                if (textBar != null) textBar.SetActive(true);   // ✅ SHOW
                 suddenSoundPlayed = false;
                 StartCoroutine(HandlePhotosState());
                 break;
@@ -143,10 +160,11 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
-    #endregion
 
-    #region Coroutines
-    IEnumerator HandleDialogueState()
+    #endregion
+
+    #region Coroutines
+    IEnumerator HandleDialogueState()
     {
         if (allCharacters == null || allCharacters.Length == 0) yield break;
         if (currentCharacterIndex >= allCharacters.Length) yield break;
@@ -171,8 +189,8 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(FadeEffect(0f));
         yield return StartCoroutine(TypewriterEffect(data.dialogueText));
 
-        // Skipable wait after typing - logic remains but won't trigger if skipRequested was just used
-        float waitTimer = 2f;
+        // Skipable wait after typing - logic remains but won't trigger if skipRequested was just used
+        float waitTimer = 2f;
         while (waitTimer > 0 && !skipRequested)
         {
             waitTimer -= Time.deltaTime;
@@ -249,13 +267,20 @@ public class GameManager : MonoBehaviour
 
     IEnumerator HandleDecisionState()
     {
+        // Fade to black FIRST
         yield return StartCoroutine(FadeEffect(1f));
+
+        // NOW hide dialogue UI
+        if (textBar != null) textBar.SetActive(false);
+        dialogueText.text = "";
+
         yield return new WaitForSeconds(0.3f);
 
         imageFrame.SetActive(false);
         CharacterData data = allCharacters[currentCharacterIndex];
 
-        if (data.stage3Background != null) backgroundDisplay.sprite = data.stage3Background;
+        if (data.stage3Background != null)
+            backgroundDisplay.sprite = data.stage3Background;
 
         if (characterDisplay != null)
         {
@@ -267,14 +292,13 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        dialogueText.text = "";
         if (decisionPanel != null) decisionPanel.SetActive(true);
         if (spareButton != null) spareButton.gameObject.SetActive(true);
         if (killButton != null) killButton.gameObject.SetActive(true);
 
+        // Fade back in
         yield return StartCoroutine(FadeEffect(0f));
     }
-
 
     IEnumerator FadeAndChangeCharacter()
     {
@@ -282,13 +306,13 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         SetState(GameState.Dialogue);
     }
-    #endregion
+    #endregion
 
-    // ========================================================================
-    //                                INPUT HANDLING
-    // ========================================================================
-    #region Input Handling
-    IEnumerator TypewriterEffect(string text)
+    // ========================================================================
+    //                                INPUT HANDLING
+    // ========================================================================
+    #region Input Handling
+    IEnumerator TypewriterEffect(string text)
     {
         if (string.IsNullOrEmpty(text)) yield break;
 
@@ -296,19 +320,22 @@ public class GameManager : MonoBehaviour
         skipRequested = false;
         dialogueText.text = "";
 
-        // Ensure the button is hidden or non-interactable until typing starts
-        if (skipButton != null && currentState != GameState.Decision)
+        // Ensure the button is hidden or non-interactable until typing starts
+        if (skipButton != null && currentState != GameState.Decision)
             skipButton.gameObject.SetActive(true);
 
         foreach (char c in text)
         {
             if (skipRequested)
             {
-                dialogueText.text = text;
+                dialogueText.text = text; // Instantly show the full text
                 break;
             }
 
-            if (c == '\n') dialogueText.text = "";
+            if (c == '\n')
+            {
+                dialogueText.text += c; // Add the newline instead of clearing
+            }
             else
             {
                 dialogueText.text += c;
@@ -318,16 +345,16 @@ public class GameManager : MonoBehaviour
         }
 
         isTyping = false;
-        // Wait a short duration so the "finish typing" click 
-        yield return new WaitForSeconds(0.3f);
+        // Wait a short duration so the "finish typing" click 
+        yield return new WaitForSeconds(0.3f);
         skipRequested = false;
     }
 
-    // 3. Updated OnSkipClicked with a text length check
-    private void OnSkipClicked()
+    // 3. Updated OnSkipClicked with a text length check
+    private void OnSkipClicked()
     {
-        // Don't do anything if the text hasn't even started (length 0)
-        if (dialogueText.text.Length == 0) return;
+        // Don't do anything if the text hasn't even started (length 0)
+        if (dialogueText.text.Length == 0) return;
 
         PlayButtonClickSound();
 
@@ -343,9 +370,9 @@ public class GameManager : MonoBehaviour
 
     private void AdvanceGameState()
     {
-        // Safety: Do not skip to next state if the typewriter is still working 
-        // (This prevents the "double jump" if clicking very fast)
-        if (isTyping) return;
+        // Safety: Do not skip to next state if the typewriter is still working 
+        // (This prevents the "double jump" if clicking very fast)
+        if (isTyping) return;
 
         StopAllCoroutines();
         isTyping = false;
@@ -360,28 +387,42 @@ public class GameManager : MonoBehaviour
     private void OnSpareButtonClicked() { PlayButtonClickSound(); OnSparePressed(); }
     private void OnKillButtonClicked() { PlayButtonClickSound(); OnKillPressed(); }
 
-    public void OnSparePressed()
-    {
-        if (currentState != GameState.Decision) return;
-        CharacterData data = allCharacters[currentCharacterIndex];
-        visibleTeamCount++;
-        UpdateCounterDisplay();
-        if (data.type == CharacterData.CharacterType.Human) hiddenHumanCount++;
-        NextCharacter();
-    }
+public void OnSparePressed()
+{
+    if (currentState != GameState.Decision) return;
+    CharacterData data = allCharacters[currentCharacterIndex];
 
-    public void OnKillPressed()
-    {
-        if (currentState != GameState.Decision) return;
-        NextCharacter();
-    }
-    #endregion
+    // SAVE: 1 for Spare
+    PlayerPrefs.SetInt("Decision_" + data.characterName, 1);
+    PlayerPrefs.Save();
 
-    // ========================================================================
-    //                                HELPERS
-    // ========================================================================
-    #region Helpers & UI
-    private void InitializeAudio()
+    StartCoroutine(FadeAndReturnToHub());
+}
+
+public void OnKillPressed()
+{
+    if (currentState != GameState.Decision) return;
+    CharacterData data = allCharacters[currentCharacterIndex];
+
+    // SAVE: 0 for Kill
+    PlayerPrefs.SetInt("Decision_" + data.characterName, 0);
+    PlayerPrefs.Save();
+
+    StartCoroutine(FadeAndReturnToHub());
+}
+
+IEnumerator FadeAndReturnToHub()
+{
+    yield return StartCoroutine(FadeEffect(1f)); // Fade to black
+    SceneManager.LoadScene("MainHub"); // Back to the Hub
+}
+#endregion
+
+// ========================================================================
+//                                HELPERS
+// ========================================================================
+#region Helpers & UI
+private void InitializeAudio()
     {
         if (backgroundMusicSource != null)
         {
@@ -425,8 +466,8 @@ public class GameManager : MonoBehaviour
         if (nextButton != null) nextButton.gameObject.SetActive(active);
         if (prevButton != null) prevButton.gameObject.SetActive(active);
 
-        // ⭐ Hide skipButton if we are in Decision state, regardless of 'active' param
-        if (skipButton != null)
+        // ⭐ Hide skipButton if we are in Decision state, regardless of 'active' param
+        if (skipButton != null)
         {
             if (currentState == GameState.Decision)
                 skipButton.gameObject.SetActive(false);
@@ -501,5 +542,5 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(FadeEffect(1f));
         SceneManager.LoadScene(sceneName);
     }
-    #endregion
+    #endregion
 }
