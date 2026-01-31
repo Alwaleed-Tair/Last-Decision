@@ -1141,7 +1141,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1836854459}
   - component: {fileID: 1836854458}
-  - component: {fileID: 1836854460}
   m_Layer: 0
   m_Name: PreEndingManager
   m_TagString: Untagged
@@ -1179,9 +1178,6 @@ MonoBehaviour:
   typeSoundAudio: {fileID: 1512571283}
   signalCountSound: {fileID: 900774054}
   horrorSignalSound: {fileID: 2118358004}
-  typeSoundVolume: 0.6
-  signalCountVolume: 0.8
-  horrorSignalVolume: 0.8
   introText: "SYSTEM: TRIAL COMPLETE ||BEGINNING FINAL EVALUATION\u2026||<slow>DO
     NOT INTERRUPT...</slow>"
   endingA_DevText: Careless. Reckless.||Wrong choice. Again. And again.||The Judge
@@ -1191,21 +1187,21 @@ MonoBehaviour:
     never stops.||It is your turn to wear the mask.||Pray the next player is more
     merciful than you.
   endingA_SystemText: 'SYSTEM MESSAGE: ROLE UPDATE: SUBJECT'
-  endingB_DevText: "You saw through enough||The system couldn\u2019t hold.||[pause]||But
-    not everyone made it."
-  endingB_SystemText: "SYSTEM MESSAGE: EXIT PROTOCOL UNLOCKED \nSYSTEM MESSAGE: HUMAN
-    LOSS CONFIRMED"
-  endingC_DevText: "You didn\u2019t trust the mask.||You judged what failed.||Not
-    what looked right||That\u2019s ... rare||Remember this feeling.||It won\u2019t
-    last outside."
+  endingB_DevText: 'Dev: you saw through enough||The system couldn''t hold.||[pause]||But
+    not everyone made it.'
+  endingB_SystemText: 'SYSTEM MESSAGE: EXIT PROTOCOL UNLOCKED||SYSTEM MESSAGE: HUMAN
+    LOSS CONFIRMED'
+  endingC_DevText: 'Dev: You didn''t trust the mask.||You judged what failed.||Not
+    what looked right||That''s ... rare||Remember this feeling.||It won''t last outside.||Out
+    there you won''t get a chamber.||You won''t get time.'
   endingC_SystemText: 'SYSTEM: EXIT PROTOCOL UNLOCKED'
   endingD_DevText: "You are... sentimental.||Or perhaps just blind?||You accepted
-    every mask as truth \nand opened the door for everyone.||The breathing, the code,
+    every mask as truth and opened the door for everyone.||The breathing, the code,
     the fakes.||You think you are a hero? No.||You are a carrier.||You didn't filter
-    the corruption \u2026 \n<slow>You invited it home.</slow>"
-  endingE_DevText: "Quiet, isn't it?||No lies. No masks. Just... nothing.||You didn't
-    want a team. <slow>\nYou wanted a graveyard. And you got it.</slow>||But tell
-    me, Player... \nIf there is no one left to observe you...||Do you even exist?"
+    the corruption \u2026 <slow>You invited it home.</slow>"
+  endingE_DevText: Quiet, isn't it?||No lies. No masks. Just... nothing.||You didn't
+    want a team. <slow>You wanted a graveyard. And you got it.</slow>||But tell me,
+    Player... If there is no one left to observe you...||Do you even exist?
 --- !u!4 &1836854459
 Transform:
   m_ObjectHideFlags: 0
@@ -1221,103 +1217,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &1836854460
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1836854457}
-  m_Enabled: 0
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 3efa7762af008d844ab1a5e6f79355f1, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!1 &2044376221
 GameObject:
   m_ObjectHideFlags: 0
@@ -1433,7 +1332,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 89e461f8c516db646a3d589ab62cfe9b, type: 3}
+  m_Resource: {fileID: 8300000, guid: 46e7d8396d9aa0c4faa9cbd184f6c681, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1

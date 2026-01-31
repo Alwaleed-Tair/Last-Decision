@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Old Man
   m_EditorClassIdentifier: 
   characterName: Fear
+  characterID: 
   type: 0
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: "Look at my memories\nyou\u2019ll see I\u2019m a father who fixs
-    everything."
+  dialogueText: "Look at my memories.\r\nyou\u2019ll see I\u2019m a father who fixs
+    everything. "
   characterSprite: {fileID: 7599611432461533966, guid: 619f1ad4f49629f4c8ebbf00e75ad73e, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -32,8 +33,8 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -108}
   stage3Scale: 0.45
-  stage2DialogueText: "I hide my failures behind small fixes\nrealizing I\u2019m
-    not repairing the damage\njust covering it up."
+  stage2DialogueText: " I hide my failures behind small fixes \r\nrealizing I\u2019m
+    not repairing the damage \r\njust covering it up. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}

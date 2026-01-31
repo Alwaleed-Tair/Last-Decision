@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: THE LISTENER
   m_EditorClassIdentifier: 
   characterName: Joy
+  characterID: DJ
   type: 1
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: "I turn the volume up to escape the silence\ncheck my memories and
-    you\u2019ll understand."
+  dialogueText: "I turn the volume up to escape the silence \r\ncheck out my memories
+    and see and maybe listen. "
   characterSprite: {fileID: 4908664854380146506, guid: 503c7802640309249af5b74a2b324df1, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -32,12 +33,9 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -108}
   stage3Scale: 0.45
-  stage2DialogueText: 'Surrounded by noise and people
-
-    I feel isolated
-
-    hiding
-    behind sound instead of being seen.'
+  stage2DialogueText: "Mozart ?\nBeethoven ? \nor something else ? \r\nOkey... \r\nI
+    am surrounded by noise and people \r\nI feel isolated \r\nhiding behind sound
+    instead of being seen. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}

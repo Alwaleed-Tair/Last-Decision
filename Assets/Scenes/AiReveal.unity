@@ -289,6 +289,9 @@ MonoBehaviour:
   fadeOverlay: {fileID: 1227094598}
   fadeDuration: 0.2
   nextSceneName: Final scenes
+  bothSparedVideo: {fileID: 32900000, guid: 731cbaba0d8862446a52d5ce98abad5c, type: 3}
+  nurseOnlyVideo: {fileID: 32900000, guid: 1638c79a43f468949a541d9dd7b9f257, type: 3}
+  djOnlyVideo: {fileID: 32900000, guid: 30fe16093a38b7c4a8a2263ac7a6a0f4, type: 3}
 --- !u!4 &413396139
 Transform:
   m_ObjectHideFlags: 0

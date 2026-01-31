@@ -5,6 +5,10 @@ public class CharacterData : ScriptableObject
 {
     [Header("Basic Info")]
     public string characterName;
+    
+    // ⭐ New: Use this for unique PlayerPrefs keys (e.g., "Nurse", "DJ", "Accountant")
+    public string characterID; 
+
     public enum CharacterType { Human, Robot }
     public CharacterType type;
 

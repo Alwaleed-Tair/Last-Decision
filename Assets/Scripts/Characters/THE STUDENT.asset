@@ -13,10 +13,13 @@ MonoBehaviour:
   m_Name: THE STUDENT
   m_EditorClassIdentifier: 
   characterName: Ideal
+  characterID: 
   type: 0
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: "Please be quickI can\u2019t waste time. \nPerfection demands everything."
+  dialogueText: "When I look at my transcript... \nI don't see grades. \nI see structure.
+    \r\nI built this reputation brick by brick. \nA fortress to keep the chaos out.
+    \r\nTo be average is to be vulnerable. \nAnd I refuse to be vulnerable. "
   characterSprite: {fileID: 2173021818988101227, guid: 32564444df519e04ea5abbfa66cc59de, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -31,8 +34,8 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -108}
   stage3Scale: 0.45
-  stage2DialogueText: "Fueled by caffeine and fear\nI push on\nconvinced I\u2019m
-    just a failure waiting to be exposed."
+  stage2DialogueText: "I removed every flaw\nevery weakness\nuntil only the ideal
+    remained. \r\nThis isn't a life. \nIt is a prison of my own design. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}

@@ -527,35 +527,33 @@ public class GameManager : MonoBehaviour
     private void OnKillButtonClicked() { PlayButtonClickSound(); OnKillPressed(); }
 
 
-    public void OnSparePressed()
+  public void OnSparePressed()
+{
+    if (currentState != GameState.Decision) return;
+    CharacterData data = allCharacters[currentCharacterIndex];
+
+    // SAVE: Use the new characterID for specific ending logic
+    // This creates keys like "Decision_Nurse" or "Decision_DJ"
+    PlayerPrefs.SetInt("Decision_" + data.characterID, 1); 
+
+    // Keep your existing sticker and count logic
+    PlayerPrefs.SetInt("Decision_" + data.characterName, 1);
+    
+    if (data.type == CharacterData.CharacterType.Human)
     {
-        if (currentState != GameState.Decision) return;
-        CharacterData data = allCharacters[currentCharacterIndex];
-
-
-        PlayerPrefs.SetInt("Decision_" + data.characterName, 1);
-
-
-        if (data.type == CharacterData.CharacterType.Human)
-        {
-            int hCount = PlayerPrefs.GetInt("FinalHumansSpared", 0);
-            PlayerPrefs.SetInt("FinalHumansSpared", hCount + 1);
-        }
-        else
-        {
-            int aCount = PlayerPrefs.GetInt("FinalAiSpared", 0);
-            PlayerPrefs.SetInt("FinalAiSpared", aCount + 1);
-        }
-
-
-        PlayerPrefs.Save();
-        UpdateCounterDisplay();
-        
-        // الـ Fade يبدأ مباشرة
-        StartCoroutine(FadeAndReturnToHub());
+        int hCount = PlayerPrefs.GetInt("FinalHumansSpared", 0);
+        PlayerPrefs.SetInt("FinalHumansSpared", hCount + 1);
+    }
+    else 
+    {
+        int aCount = PlayerPrefs.GetInt("FinalAiSpared", 0);
+        PlayerPrefs.SetInt("FinalAiSpared", aCount + 1);
     }
 
-
+    PlayerPrefs.Save();
+    UpdateCounterDisplay();
+    StartCoroutine(FadeAndReturnToHub());
+}
     public void OnKillPressed()
     {
         if (currentState != GameState.Decision) return;

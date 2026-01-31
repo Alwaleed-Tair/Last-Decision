@@ -144,21 +144,31 @@ public class DoorsSticker : MonoBehaviour
     }
 
 
-    public void ResetGameProgress()
-    {
-        PlayerPrefs.DeleteKey("Decision_Ideal");
-        PlayerPrefs.DeleteKey("Decision_Control");
-        PlayerPrefs.DeleteKey("Decision_Pride");
-        PlayerPrefs.DeleteKey("Decision_Fear");
-        PlayerPrefs.DeleteKey("Decision_Anger");
-        PlayerPrefs.DeleteKey("Decision_Joy");
-        PlayerPrefs.DeleteKey("FinalHumansSpared");
-        PlayerPrefs.DeleteKey("FinalAiSpared");
-        PlayerPrefs.Save();
+ public void ResetGameProgress()
+{
+    // 1. Clear Decisions for the Hub Stickers (By Name)
+    PlayerPrefs.DeleteKey("Decision_Ideal");
+    PlayerPrefs.DeleteKey("Decision_Control");
+    PlayerPrefs.DeleteKey("Decision_Pride");
+    PlayerPrefs.DeleteKey("Decision_Fear");
+    PlayerPrefs.DeleteKey("Decision_Anger");
+    PlayerPrefs.DeleteKey("Decision_Joy");
 
-        // جديد: ريسيت صوت الباب الكبير
-        bigDoorSoundPlayed = false;
+    // 2. Clear Decisions for Ending Videos (By characterID)
+    // This fixes the issue where an old "Nurse" spare was triggering the Both ending
+    PlayerPrefs.DeleteKey("Decision_Nurse");
+    PlayerPrefs.DeleteKey("Decision_DJ");
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-    }
+    // 3. Clear Final Counters
+    PlayerPrefs.DeleteKey("FinalHumansSpared");
+    PlayerPrefs.DeleteKey("FinalAiSpared");
+
+    // 4. Save and Reload
+    PlayerPrefs.Save();
+    
+    UnityEngine.Debug.Log("<color=green>SUCCESS:</color> All game data and character IDs have been wiped.");
+
+    // Reload the current scene to update the Hub visuals
+    UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+}
 }

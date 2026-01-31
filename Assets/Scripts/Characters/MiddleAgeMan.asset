@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: MiddleAgeMan
   m_EditorClassIdentifier: 
   characterName: Control
+  characterID: 
   type: 0
   doorID: 0
   backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
-  dialogueText: hhhhhhhhhhhhhhhhh
+  dialogueText: "So, what if it was her birthday ?! \nI had a business to run! She
+    kept whining about some stupid drawing !\n I shoved her away! I told her to grow
+    up ! \nShe stopped calling me \"Dad\" ? \nGood ! \nI built this empire to feed
+    them ! \nAnd they repay me with silence ?! "
   characterSprite: {fileID: 6231675869601175388, guid: 84f7bce62952c254ebe37f516b3e75be, type: 3}
   spawnPosition: {x: 0, y: 60}
   characterScale: 0.35
@@ -31,7 +35,7 @@ MonoBehaviour:
   stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
   stage3Position: {x: 0, y: -180}
   stage3Scale: 0.45
-  stage2DialogueText: hello
+  stage2DialogueText: "Beautiful view, isn't it ? \njust get on with it already. "
   spareModification:
     imageToAdd: {fileID: 0}
     positionOnBackground: {x: 0, y: 0}
