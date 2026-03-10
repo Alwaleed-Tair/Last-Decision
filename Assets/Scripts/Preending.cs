@@ -2,13 +2,30 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+
+// --- JSON DATA STRUCTURES ---
+[System.Serializable]
+public class WordEntry {
+    public string word;
+    public float start;
+    public float end;
+    public int startOffset; 
+    public int endOffset;
+}
+
+[System.Serializable]
+public class EndingData {
+    public string transcript;
+    public List<WordEntry> words;
+}
 
 public class Preending : MonoBehaviour
 {
     [Header("--- TEXT OBJECTS ---")]
-    public TextMeshProUGUI mainStoryText;    // Black Screen Text (SYSTEM)
-    public TextMeshProUGUI imageOverlayText; // White Text (DEV)
+    public TextMeshProUGUI mainStoryText;
+    public TextMeshProUGUI imageOverlayText;
 
     [Header("--- IMAGES ---")]
     public GameObject devImage;
@@ -16,289 +33,338 @@ public class Preending : MonoBehaviour
     public GameObject finalScreenImage;
     public GameObject restartButton;
 
-    // --- INTERNAL COUNTERS ---
-    private int humansSpared = 0;
-    private int aiSpared = 0;
-
-    [Header("--- SETTINGS ---")]
-    public string mainMenuSceneName = "MainMenu";
-    public string postEndingSceneName = "Credits";
-
-    [Header("--- TYPING SETTINGS ---")]
-    public float defaultTypingSpeed = 0.03f;
-    public float devTypingSpeed = 0.08f;
-    public int maxLinesPerPage = 7;
-    public float pageClearDelay = 0.6f;
-    public float countUpSpeed = 0.8f;
-    public float lineDelay = 1.0f;
-    public float lineSpacing = 30f;
+    [Header("--- ENDING ASSETS ---")]
+    public TextAsset[] endingJsons;
+    public AudioClip[] endingAudios;
 
     [Header("--- AUDIO ---")]
     public AudioSource typeSoundAudio;
     public AudioSource signalCountSound;
     public AudioSource horrorSignalSound;
+    
+    [Header("--- DEV TALK AUDIO LAYERS ---")]
+    public AudioSource devAudioLayer1;
+    public AudioSource devAudioLayer2;
+    [Range(0f, 1f)] public float devVolume = 0.5f;
 
-    // ================= MESSAGES =================
+    [Header("--- TYPING SETTINGS ---")]
+    public float defaultTypingSpeed = 0.03f;
+    public float countUpSpeed = 0.8f;
+    public float lineSpacing = 30f;
 
-    [Header("--- INTRO ---")]
+    [Header("--- INTRO TEXT ---")]
     [TextArea(3, 5)] public string introText = "SYSTEM: TRIAL COMPLETE||BEGINNING FINAL EVALUATION…||<slow>DO NOT INTERRUPT...</slow>";
 
-    [Header("--- ENDING A (Failed) ---")]
-    [TextArea(3, 5)] public string endingA_DevText = "Careless. Reckless.||Wrong choice. Again. And again.||The Judge has failed the trial.||You played with lives. You played with ghosts.||I hope you enjoyed the power.||Because it was your last.||[pause]||You see it now, don't you?||Decision made. You are no longer the judge.||Judgment is eternal. The game never stops.||It is your turn to wear the mask.||Pray the next player is more merciful than you.";
-    [TextArea(2, 3)] public string endingA_SystemText = "SYSTEM MESSAGE: ROLE UPDATE: SUBJECT";
+    [Header("--- SCENE OVERRIDE ---")]
+    [Tooltip("اتركه فارغاً لاستخدام المنطق الافتراضي، أو اكتب اسم المشهد للتحكم يدوياً")]
+    public string nextSceneOverride = "";
 
-    [Header("--- ENDING B (Some Loss) ---")]
-    [TextArea(3, 5)] public string endingB_DevText = "Dev: you saw through enough||The system couldn’t hold.||[pause]||But not everyone made it.";
-    [TextArea(2, 3)] public string endingB_SystemText = "SYSTEM MESSAGE: EXIT PROTOCOL UNLOCKED||SYSTEM MESSAGE: HUMAN LOSS CONFIRMED";
+    [Header("--- FADE ---")]
+    public CanvasGroup fadePanel;
+    public float fadeDuration = 1.5f;
 
-    [Header("--- ENDING C (Total = 6) ---")]
-    [TextArea(3, 5)] public string endingC_DevText = "Dev: You didn’t trust the mask.||You judged what failed.||Not what looked right||That’s ... rare||Remember this feeling.||It won’t last outside.||Out there you won’t get a chamber.||You won’t get time.";
-    [TextArea(2, 3)] public string endingC_SystemText = "SYSTEM: EXIT PROTOCOL UNLOCKED";
+    // Internal Counters
+    private int humansSpared = 0;
+    private int aiSpared = 0;
 
-    [Header("--- ENDING D (Other) ---")]
-    [TextArea(3, 5)] public string endingD_DevText = "You are... sentimental.||Or perhaps just blind?||You accepted every mask as truth and opened the door for everyone.||The breathing, the code, the fakes.||You think you are a hero? No.||You are a carrier.||You didn't filter the corruption … <slow>You invited it home.</slow>";
-
-    [Header("--- ENDING E (Total = 0) ---")]
-    [TextArea(3, 5)] public string endingE_DevText = "Quiet, isn't it?||No lies. No masks. Just... nothing.||You didn't want a team. <slow>You wanted a graveyard. And you got it.</slow>||But tell me, Player... If there is no one left to observe you...||Do you even exist?";
+    // Ending Texts (System Messages)
+    private string endingA_SystemText = "SYSTEM MESSAGE: ROLE UPDATE: SUBJECT";
+    private string endingB_SystemText = "SYSTEM MESSAGE: EXIT PROTOCOL UNLOCKED||SYSTEM MESSAGE: HUMAN LOSS CONFIRMED";
+    private string endingC_SystemText = "SYSTEM: EXIT PROTOCOL UNLOCKED";
 
     void Start()
     {
-        LoadGameData();
-
-        if (typeSoundAudio != null) typeSoundAudio.volume = 0.03f;
-        if (signalCountSound != null) signalCountSound.volume = 0.03f;
+        humansSpared = PlayerPrefs.GetInt("FinalHumansSpared", 0);
+        aiSpared = PlayerPrefs.GetInt("FinalAiSpared", 0);
 
         if (devImage != null) devImage.SetActive(false);
         if (zeroTeamImage != null) zeroTeamImage.SetActive(false);
         if (finalScreenImage != null) finalScreenImage.SetActive(false);
         if (restartButton != null) restartButton.SetActive(false);
 
-        if (mainStoryText != null) { mainStoryText.text = ""; mainStoryText.lineSpacing = lineSpacing; }
-        if (imageOverlayText != null) { imageOverlayText.text = ""; imageOverlayText.lineSpacing = lineSpacing; }
+        mainStoryText.text = "";
+        imageOverlayText.text = "";
+        mainStoryText.lineSpacing = lineSpacing;
+        imageOverlayText.lineSpacing = lineSpacing;
+
+        // ابدأ من أسود كامل
+        if (fadePanel != null) fadePanel.alpha = 1f;
 
         StartCoroutine(RunFullSequence());
     }
 
-    void LoadGameData()
+    private bool IsOverflowing(TextMeshProUGUI tmp)
     {
-        // Fetches total human and AI spares from PlayerPrefs
-        humansSpared = PlayerPrefs.GetInt("FinalHumansSpared", 0);
-        aiSpared = PlayerPrefs.GetInt("FinalAiSpared", 0);
+        tmp.ForceMeshUpdate();
+        int lineCount = tmp.textInfo.lineCount;
+        float lineH = tmp.fontSize + tmp.lineSpacing;
+        return (lineCount * lineH) > tmp.rectTransform.rect.height;
     }
 
-    public void LoadMainMenu()
+    // --- Fade In: من أسود للشفاف ---
+    private IEnumerator FadeIn(float duration)
     {
-        SceneManager.LoadScene(mainMenuSceneName);
+        if (fadePanel == null) yield break;
+        float t = 0f;
+        fadePanel.alpha = 1f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            fadePanel.alpha = 1f - (t / duration);
+            yield return null;
+        }
+        fadePanel.alpha = 0f;
+    }
+
+    // --- Fade Out: من شفاف للأسود ---
+    private IEnumerator FadeOut(float duration)
+    {
+        if (fadePanel == null) yield break;
+        float t = 0f;
+        fadePanel.alpha = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            fadePanel.alpha = t / duration;
+            yield return null;
+        }
+        fadePanel.alpha = 1f;
     }
 
     private IEnumerator RunFullSequence()
     {
-        // --- PHASE 1: EVALUATION ---
-        mainStoryText.text = "";
-        yield return StartCoroutine(PlayTextSequence(introText, mainStoryText, true, false));
+        // Fade in عند بداية المشهد
+        yield return StartCoroutine(FadeIn(fadeDuration));
 
-        // 1. Human Signals
-        yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
+        mainStoryText.text = "";
+        yield return StartCoroutine(PlayTextSequence(introText, mainStoryText));
+
+        yield return StartCoroutine(TypeLine("HUMAN SIGNALS DETECTED: ", mainStoryText, true));
         yield return StartCoroutine(CountUpEffect(humansSpared, mainStoryText));
         yield return new WaitForSeconds(1f);
-
-        // 2. Non-Human (AI) Signals
-        yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true, false));
+        
+        yield return StartCoroutine(TypeLine("NON-HUMAN SIGNALS DETECTED: ", mainStoryText, true));
         yield return new WaitForSeconds(1.5f);
-
-        if (aiSpared > 0)
-        {
-            // Trigger horror sound specifically for AI reveal
-            if (horrorSignalSound != null)
-            {
-                horrorSignalSound.volume = 0.8f;
-                horrorSignalSound.Play();
-            }
-            mainStoryText.text += "<color=#630f09>" + aiSpared.ToString() + "</color>";
-        }
-        else
-        {
-            // 0 AI detected, use standard signal sound
+        
+        if (aiSpared > 0) {
+            if (horrorSignalSound != null) horrorSignalSound.Play();
+            mainStoryText.text += "<color=#630f09>" + aiSpared + "</color>";
+        } else {
             if (signalCountSound != null) signalCountSound.Play();
             mainStoryText.text += "0";
         }
-
+        
         mainStoryText.ForceMeshUpdate();
         mainStoryText.maxVisibleCharacters = mainStoryText.textInfo.characterCount;
-
         yield return new WaitForSeconds(2f);
 
-        if (horrorSignalSound != null && horrorSignalSound.isPlaying)
-        {
+        if (horrorSignalSound != null && horrorSignalSound.isPlaying) 
             yield return StartCoroutine(FadeOutAudio(horrorSignalSound, 0.5f));
-        }
 
-        yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true, false));
+        yield return StartCoroutine(TypeLine("ISOLATING SOURCE…", mainStoryText, true));
         yield return new WaitForSeconds(0.7f);
 
-        // --- PHASE 2: DEV DIALOGUE ---
-        string endingID = DetermineEndingID();
-        GameObject activeImage = (endingID == "E") ? zeroTeamImage : devImage;
+        string id = DetermineEndingID();
+        int index = GetEndingIndex(id);
+        GameObject activeImage = (id == "E") ? zeroTeamImage : devImage;
 
-        mainStoryText.text = "";
-
-        if (activeImage != null)
+        if (activeImage != null && index < endingJsons.Length)
         {
+            mainStoryText.text = "";
+
+            // Fade out ثم اظهر الـ Dev
+            yield return StartCoroutine(FadeOut(fadeDuration));
             activeImage.SetActive(true);
             imageOverlayText.text = "";
+            yield return StartCoroutine(FadeIn(fadeDuration));
 
-            string textToShow = "";
-            switch (endingID)
-            {
-                case "A": textToShow = endingA_DevText; break;
-                case "B": textToShow = endingB_DevText; break;
-                case "C": textToShow = endingC_DevText; break;
-                case "D": textToShow = endingD_DevText; break;
-                case "E": textToShow = endingE_DevText; break;
-            }
+            devAudioLayer1.clip = endingAudios[index];
+            devAudioLayer1.volume = devVolume;
+            devAudioLayer1.Play();
+            if(devAudioLayer2 != null) devAudioLayer2.Play();
 
-            yield return StartCoroutine(PlayTextSequence(textToShow, imageOverlayText, true, true));
+            EndingData data = JsonUtility.FromJson<EndingData>(endingJsons[index].text);
+            yield return StartCoroutine(TypeLineWithJson(data, imageOverlayText, devAudioLayer1));
+
             yield return new WaitForSeconds(3f);
+            if (devAudioLayer1 != null) StartCoroutine(FadeOutAudio(devAudioLayer1, 1.5f));
+            if (devAudioLayer2 != null) StartCoroutine(FadeOutAudio(devAudioLayer2, 1.5f));
+
+            // Fade out ثم اخفي الـ Dev
+            yield return StartCoroutine(FadeOut(fadeDuration));
             activeImage.SetActive(false);
             imageOverlayText.text = "";
+            yield return StartCoroutine(FadeIn(fadeDuration));
         }
 
-        // --- PHASE 3: SYSTEM CONCLUSION ---
-        if (endingID == "A" || endingID == "B" || endingID == "C")
+        string sysText = GetSystemText(id);
+        if (!string.IsNullOrEmpty(sysText)) {
+            mainStoryText.text = "";
+            yield return StartCoroutine(PlayTextSequence(sysText, mainStoryText));
+            yield return new WaitForSeconds(3f);
+        }
+
+        // Fade out قبل الانتقال للمشهد
+        yield return StartCoroutine(FadeOut(fadeDuration));
+
+        // PHASE 4: TRANSITION
+        if (!string.IsNullOrEmpty(nextSceneOverride))
         {
-            string systemTextToShow = "";
-            if (endingID == "A") systemTextToShow = endingA_SystemText;
-            else if (endingID == "B") systemTextToShow = endingB_SystemText;
-            else if (endingID == "C") systemTextToShow = endingC_SystemText;
-
-            if (systemTextToShow != "")
-            {
-                mainStoryText.text = "";
-                yield return StartCoroutine(TypeLine(systemTextToShow, mainStoryText, true, false));
-                yield return new WaitForSeconds(3f);
-            }
+            SceneManager.LoadScene(nextSceneOverride);
         }
-        else
-        {
-            yield return new WaitForSeconds(2f);
-        }
-
-        // --- PHASE 4: FINAL TRANSITION ---
-        // If any AI were spared, load the Video Reveal scene
-        if (aiSpared > 0)
+        else if (aiSpared > 0) 
         {
             SceneManager.LoadScene("AiReveal");
-        }
-        else
+        } 
+        else 
         {
-            SceneManager.LoadScene(postEndingSceneName);
+            SceneManager.LoadScene("Final scenes");
         }
     }
 
-    private string DetermineEndingID()
+    private IEnumerator PlayTextSequence(string fullText, TextMeshProUGUI target)
     {
-        int totalSpared = humansSpared + aiSpared;
-        if (totalSpared == 0) return "E";
-        if (totalSpared == 6) return "D";
+        string[] lines = fullText.Split(new string[] { "||" }, System.StringSplitOptions.None);
+        foreach (string line in lines)
+        {
+            if (line.Trim() == "[pause]") { yield return new WaitForSeconds(1.0f); continue; }
+            yield return StartCoroutine(TypeLine(line, target, true));
+            yield return new WaitForSeconds(1.0f);
+        }
+    }
+
+    private IEnumerator TypeLine(string line, TextMeshProUGUI target, bool append)
+    {
+        string cleanLine = Regex.Replace(line, @"<slow>|</slow>|\[pause\]", "");
+        if (append && target.text.Length > 0) target.text += "\n";
+
+        target.ForceMeshUpdate();
+        int existingVisibleChars = target.textInfo.characterCount;
+
+        target.text += cleanLine;
+        target.ForceMeshUpdate();
+        target.maxVisibleCharacters = existingVisibleChars;
+
+        int totalChars = target.textInfo.characterCount;
+
+        for (int i = existingVisibleChars; i <= totalChars; i++)
+        {
+            float currentSpeed = defaultTypingSpeed;
+
+            int localIndex = i - existingVisibleChars;
+            if (line.Contains("<slow>") && localIndex > line.IndexOf("<slow>") && localIndex < line.IndexOf("</slow>"))
+                currentSpeed = 0.15f;
+
+            target.maxVisibleCharacters = i;
+
+            if (IsOverflowing(target))
+            {
+                target.text = cleanLine;
+                target.ForceMeshUpdate();
+                target.maxVisibleCharacters = 0;
+                existingVisibleChars = 0;
+                totalChars = target.textInfo.characterCount;
+                i = 0;
+            }
+
+            if (typeSoundAudio != null && target == mainStoryText)
+            {
+                if (i > existingVisibleChars && i <= totalChars)
+                {
+                    char c = target.textInfo.characterInfo[i - 1].character;
+                    if (!char.IsWhiteSpace(c)) typeSoundAudio.Play();
+                }
+            }
+            yield return new WaitForSeconds(currentSpeed);
+        }
+    }
+
+    private IEnumerator TypeLineWithJson(EndingData timingData, TextMeshProUGUI targetTextObj, AudioSource voiceSource)
+    {
+        targetTextObj.text = "";
+        string fullTranscript = timingData.transcript;
+
+        for (int i = 0; i < timingData.words.Count; i++)
+        {
+            WordEntry entry = timingData.words[i];
+            while (voiceSource.time < entry.start) yield return null;
+
+            // --- LINE BREAK LOGIC ---
+            if (i > 0)
+            {
+                int prevEnd = timingData.words[i - 1].endOffset;
+                int currStart = entry.startOffset;
+
+                if (prevEnd >= 0 && currStart >= prevEnd && currStart <= fullTranscript.Length)
+                {
+                    string gap = fullTranscript.Substring(prevEnd, currStart - prevEnd);
+                    if (gap.Contains("||||")) targetTextObj.text = "";
+                    else if (gap.Contains("||")) targetTextObj.text += "\n";
+                }
+            }
+
+            // --- PUNCTUATION GRABBER ---
+            int safeEnd = Mathf.Clamp(entry.endOffset, 0, fullTranscript.Length);
+            string displayedWord = entry.word;
+
+            int nextCharIdx = safeEnd;
+            while (nextCharIdx < fullTranscript.Length)
+            {
+                char c = fullTranscript[nextCharIdx];
+                if (c == '.' || c == ',' || c == '?' || c == '!' || c == ':')
+                {
+                    displayedWord += c;
+                    nextCharIdx++;
+                }
+                else break;
+            }
+
+            displayedWord = Regex.Replace(displayedWord, @"<[^>]*>", "");
+
+            targetTextObj.text += displayedWord + " ";
+            targetTextObj.ForceMeshUpdate();
+
+            if (IsOverflowing(targetTextObj))
+            {
+                targetTextObj.text = displayedWord + " ";
+                targetTextObj.ForceMeshUpdate();
+            }
+        }
+    }
+
+    private IEnumerator CountUpEffect(int final, TextMeshProUGUI target)
+    {
+        string baseTxt = target.text;
+        for (int i = 0; i <= final; i++) {
+            target.text = baseTxt + i;
+            target.ForceMeshUpdate();
+            target.maxVisibleCharacters = target.textInfo.characterCount;
+            if (signalCountSound != null) signalCountSound.Play();
+            yield return new WaitForSeconds(countUpSpeed);
+        }
+        target.text += "\n";
+    }
+
+    private IEnumerator FadeOutAudio(AudioSource source, float duration)
+    {
+        float startVol = source.volume;
+        while (source.volume > 0) {
+            source.volume -= startVol * Time.deltaTime / duration;
+            yield return null;
+        }
+        source.Stop();
+        source.volume = startVol;
+    }
+
+    private string DetermineEndingID() {
+        int total = humansSpared + aiSpared;
+        if (total == 0) return "E";
+        if (total == 6) return "D";
         if (humansSpared == 4 && aiSpared == 0) return "C";
         if (humansSpared == 3 && aiSpared == 0) return "B";
         return "A";
     }
 
-    private IEnumerator PlayTextSequence(string fullText, TextMeshProUGUI targetTextObj, bool append, bool useFixedSpeed)
-    {
-        string[] lines = fullText.Split(new string[] { "||" }, System.StringSplitOptions.None);
-        int linesOnCurrentPage = 0;
-
-        foreach (string line in lines)
-        {
-            if (line.Trim() == "[pause]") { yield return new WaitForSeconds(1.0f); continue; }
-
-            if (useFixedSpeed && append && linesOnCurrentPage >= maxLinesPerPage)
-            {
-                yield return new WaitForSeconds(pageClearDelay);
-                targetTextObj.text = "";
-                linesOnCurrentPage = 0;
-            }
-
-            yield return StartCoroutine(TypeLine(line, targetTextObj, append, useFixedSpeed));
-            linesOnCurrentPage++;
-            yield return new WaitForSeconds(lineDelay);
-        }
-    }
-
-    private IEnumerator TypeLine(string line, TextMeshProUGUI targetTextObj, bool append, bool useFixedSpeed)
-    {
-        string cleanLine = Regex.Replace(line, @"<slow>|</slow>|\[pause\]", "");
-        int startIndex = 0;
-
-        if (append)
-        {
-            if (targetTextObj.text.Length > 0) targetTextObj.text += "\n";
-            startIndex = targetTextObj.text.Length;
-            targetTextObj.text += cleanLine;
-        }
-        else
-        {
-            targetTextObj.text = cleanLine;
-            startIndex = 0;
-        }
-
-        targetTextObj.ForceMeshUpdate();
-        targetTextObj.maxVisibleCharacters = startIndex;
-        int totalCharacters = targetTextObj.textInfo.characterCount;
-        int counter = startIndex;
-        float currentSpeed = useFixedSpeed ? devTypingSpeed : defaultTypingSpeed;
-
-        while (counter <= totalCharacters)
-        {
-            if (!useFixedSpeed)
-            {
-                int localIndex = counter - startIndex;
-                if (line.Contains("<slow>") && localIndex > line.IndexOf("<slow>") && localIndex < line.IndexOf("</slow>"))
-                    currentSpeed = 0.15f;
-                else
-                    currentSpeed = defaultTypingSpeed;
-            }
-
-            targetTextObj.maxVisibleCharacters = counter;
-
-            if (counter > startIndex && counter <= totalCharacters && typeSoundAudio != null)
-            {
-                if (counter - 1 < targetTextObj.textInfo.characterInfo.Length)
-                {
-                    char c = targetTextObj.textInfo.characterInfo[counter - 1].character;
-                    if (!char.IsWhiteSpace(c) && targetTextObj == mainStoryText)
-                        typeSoundAudio.Play();
-                }
-            }
-            counter++;
-            yield return new WaitForSeconds(currentSpeed);
-        }
-    }
-
-    private IEnumerator FadeOutAudio(AudioSource audioSource, float duration)
-    {
-        float startVolume = audioSource.volume;
-        while (audioSource.volume > 0)
-        {
-            audioSource.volume -= startVolume * Time.deltaTime / duration;
-            yield return null;
-        }
-        audioSource.Stop();
-        audioSource.volume = startVolume;
-    }
-
-    private IEnumerator CountUpEffect(int finalCount, TextMeshProUGUI targetTextObj)
-    {
-        string baseText = targetTextObj.text;
-        for (int i = 0; i <= finalCount; i++)
-        {
-            targetTextObj.text = baseText + i.ToString();
-            targetTextObj.ForceMeshUpdate();
-            targetTextObj.maxVisibleCharacters = targetTextObj.textInfo.characterCount;
-            if (signalCountSound != null) signalCountSound.Play();
-            yield return new WaitForSeconds(countUpSpeed);
-        }
-    }
+    private int GetEndingIndex(string id) => id switch { "A"=>0, "B"=>1, "C"=>2, "D"=>3, "E"=>4, _=>0 };
+    private string GetSystemText(string id) => id switch { "A"=>endingA_SystemText, "B"=>endingB_SystemText, "C"=>endingC_SystemText, _=>"" };
 }

@@ -37,11 +37,21 @@ public class DoorsSticker : MonoBehaviour
     private bool bigDoorSoundPlayed = false; // جديد: تتبع الصوت
 
 
-    void Start()
+   
+        void Start()
+{
+    // Update stickers and check how many are finished
+    int finished = UpdateAllStickers();
+
+    // If less than 6 are finished, make sure the big door is BLOCKED
+    if (finished < 6)
     {
-        // On Start, we just update the stickers and lock the buttons
-        UpdateAllStickers();
+        if (closedDoorImage != null) closedDoorImage.SetActive(true);
+        if (middleDoorButton != null) middleDoorButton.interactable = false;
+        bigDoorSoundPlayed = false;
     }
+}
+    
 
 
     void Update()
