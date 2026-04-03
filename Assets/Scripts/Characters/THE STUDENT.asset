@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f385b289e3ea8f47b2da39a026bc134, type: 3}
+  m_Name: THE STUDENT
+  m_EditorClassIdentifier: 
+  characterName: Ideal
+  characterID: 
+  type: 0
+  doorID: 0
+  backgroundImage: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
+  dialogueText: "When I look at my transcript... \nI don't see grades. \nI see structure.
+    \r\nI built this reputation brick by brick. \nA fortress to keep the chaos out.
+    \r\nTo be average is to be vulnerable. \nAnd I refuse to be vulnerable. "
+  characterSprite: {fileID: 2173021818988101227, guid: 32564444df519e04ea5abbfa66cc59de, type: 3}
+  spawnPosition: {x: 0, y: 60}
+  characterScale: 0.35
+  stage2Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
+  stage2Position: {x: -570, y: 60}
+  stage2Scale: 0.35
+  storyImages:
+  - {fileID: -4126882495801548486, guid: 0e262d111348a0c4b82c17722a0c1216, type: 3}
+  - {fileID: -7867846870963327778, guid: 2cbc0d555878bb342bf6d4228615a797, type: 3}
+  framePosition: {x: 308, y: 130}
+  frameScale: 1
+  stage3Background: {fileID: -941769597684628784, guid: b4692b1135af9e44695b469a7b14b15a, type: 3}
+  stage3Position: {x: 0, y: -108}
+  stage3Scale: 0.45
+  stage2DialogueText: "I removed every flaw\nevery weakness\nuntil only the ideal
+    remained. \r\nThis isn't a life. \nIt is a prison of my own design. "
+  spareModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0
+  killModification:
+    imageToAdd: {fileID: 0}
+    positionOnBackground: {x: 0, y: 0}
+    scale: 1
+    sortingOrder: 0
